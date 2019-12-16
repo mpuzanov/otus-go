@@ -18,7 +18,7 @@ func Unpack(in string) (out string, err error) {
 
 		if unicode.IsDigit(val) {
 
-			if prevChar == 92 && prevChar2 != 92 {
+			if prevChar == 92 && prevChar2 != 92 { // 92 - код escape - последовательности `\`
 				prevChar = val
 				out += string(val)
 			} else {
