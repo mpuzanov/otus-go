@@ -5,24 +5,27 @@ import (
 )
 
 func TestUnpack(t *testing.T) {
-	var tests = []struct {
+	testCases := []struct {
+		desc  string
 		input string
 		wont  string
 		err   error
 	}{
-		{`a4bc2d5e`, `aaaabccddddde`, nil},
-		{`abcd`, `abcd`, nil},
-		{`п5г4`, `пппппгггг`, nil},
-		{`45`, ``, errBadString},
-		{``, ``, nil},
-		{`qwe\4\5`, `qwe45`, nil},
-		{`qwe\45`, `qwe44444`, nil},
-		{`qwe\\5`, `qwe\\\\\`, nil},
+		{"test1", `a4bc2d5e`, `aaaabccddddde`, nil},
+		{"test2", `abcd`, `abcd`, nil},
+		{"test3", `п5г4`, `пппппгггг`, nil},
+		{"test4", `45`, ``, errBadString},
+		{"test5", ``, ``, nil},
+		{"test6", `qwe\4\5`, `qwe45`, nil},
+		{"test7", `qwe\45`, `qwe44444`, nil},
+		{"test8", `qwe\\5`, `qwe\\\\\`, nil},
 	}
-	for _, test := range tests {
-		if got, err := Unpack(test.input); got != test.wont || err != test.err {
-			t.Errorf("convert(%v) = %v, wont=%v, error=%v", test.input, got, test.wont, err)
-		}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if got, err := Unpack(tC.input); got != tC.wont || err != tC.err {
+				t.Errorf("convert(%v) = %v, wont=%v, error=%v", tC.input, got, tC.wont, err)
+			}
+		})
 	}
 }
 

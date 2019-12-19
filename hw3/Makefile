@@ -6,6 +6,6 @@ run:
 	go run . sample_in.txt
 
 test:
-	go test ./topwords
+	go test -timeout 30s ./topwords
 
-.PHONY: build run
+.PHONY: build run test
