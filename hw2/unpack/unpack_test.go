@@ -25,3 +25,15 @@ func TestUnpack(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkUnpack(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Unpack(`a4bc2d5e`)
+	}
+}
+
+func BenchmarkUnpack2(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Unpack2(`a4bc2d5e`)
+	}
+}

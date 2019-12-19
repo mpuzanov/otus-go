@@ -11,7 +11,8 @@ func TestTopWords(t *testing.T) {
 		wont  string
 	}{
 		{`111 222 111 222 111 333`, "111 222 333"},
-		{`cat and dog one dog two cats and one man`, "and dog one two cats man cat"},
+		{`cat and dog one dog two cats and one man`, "and dog one cat cats man two"},
+		{`a b c d b`, "b a c d"},
 	}
 	for _, test := range tests {
 		if got := strings.Join(TopWords10(test.input), " "); got != test.wont {

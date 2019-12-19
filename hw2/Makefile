@@ -7,4 +7,7 @@ run:
 test:
 	go test ./unpack
 
-.PHONY: build run test
+bench:
+	go test ./unpack -bench=. -benchmem
+
+.PHONY: build run test bench
