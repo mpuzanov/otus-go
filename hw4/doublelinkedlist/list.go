@@ -2,6 +2,7 @@ package doublelinkedlist
 
 import (
 	"fmt"
+	"strings"
 )
 
 // List Список
@@ -13,11 +14,7 @@ type List struct {
 
 // NewList ...
 func NewList() *List {
-	return &List{
-		size:      0,
-		firstItem: nil,
-		lastItem:  nil,
-	}
+	return &List{}
 }
 
 // AddValueList Добавляем элемент в список
@@ -27,13 +24,13 @@ func (l *List) AddValueList(v interface{}) *Item {
 
 // ToString Вывод списка
 func (l *List) ToString() string {
-	s := ""
+	var sb strings.Builder
 	node := l.firstItem
 	for node != nil {
-		s += fmt.Sprintln(node.value)
+		sb.WriteString(fmt.Sprintln(node.value))
 		node = node.Next()
 	}
-	return s
+	return sb.String()
 }
 
 // Len длинна списка
