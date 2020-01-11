@@ -88,8 +88,8 @@ func Run(task []func() error, N int, M int) (int, error) {
 	return countTask, nil
 }
 
-// worker Обработчик для выполнения функций из канала jobs.
-// res - канал для результатов.
+// worker Обработчик для выполнения функций из канала jobs
+// res - канал для результатов
 // stopJob - канал для прекаращения обработки.
 func worker(id int, jobs <-chan job, res chan<- result, stopJob <-chan struct{}) {
 	for {
@@ -100,15 +100,21 @@ func worker(id int, jobs <-chan job, res chan<- result, stopJob <-chan struct{})
 		default:
 		}
 
-		f, ok := <-jobs
-		if !ok {
-			log.Tracef("Заданий больше нет - Останавливаем обработчик %d\n", id)
+		select {
+		case <-stopJob:
+			log.Tracef("Останавливаем обработчик %d\n", id)
 			return
+		case f, ok := <-jobs:
+			if !ok {
+				log.Tracef("Заданий больше нет - Останавливаем обработчик %d\n", id)
+				return
+			}
+			var r result
+			r.err = f() // выполняем функцию
+			res <- r
+			log.Tracef("обработчик %d выполнил задание! Ошибка: %v\n", id, r.err)
 		}
-		var r result
-		r.err = f() // выполняем функцию
-		res <- r
-		log.Tracef("обработчик %d выполнил задание! Ошибка: %v\n", id, r.err)
+
 	}
 }
 

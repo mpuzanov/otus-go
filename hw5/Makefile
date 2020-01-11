@@ -14,7 +14,7 @@ run:
 test:
 	go vet $(PACKAGES)
 	go fmt $(PACKAGES) 
-	go test -v -count=1 -race $(GO_TEST_DIRS)
+	go test -v -count=1 $(GO_TEST_DIRS)
 
 coverage:
 	go test -coverprofile=coverage.out.tmp $(GO_TEST_DIRS)
