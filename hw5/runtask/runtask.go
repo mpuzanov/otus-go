@@ -20,7 +20,7 @@ func init() {
 	//log.SetLevel(log.InfoLevel)
 }
 
-// Run ...
+// Run Выполнение функций из слайса, N - кол-во одновременных обработчиков, M - кол-во ошибок для прерывания выполнения функции
 func Run(task []func() error, N int, M int) (int, error) {
 
 	countWorker := N // кол-во обработчиков
@@ -31,7 +31,7 @@ func Run(task []func() error, N int, M int) (int, error) {
 	var countTask int  // кол-во выполенных заданий
 	var countError int // кол-во выполенных заданий с ошибками
 
-	log.Infof("Кол-во функций для выполнения: %d. Кол-во обрботчиков: %d Предел ошибок: %d\n", len(task), countWorker, MaxError)
+	log.Infof("Кол-во функций для выполнения: %d. Кол-во обработчиков: %d. Кол-во ошибок для прекращения работы: %d\n", len(task), countWorker, MaxError)
 
 	chanFuncs := make(chan job)          // канал функций для выполнения
 	chanResults := make(chan result)     // канал получения результатов
@@ -90,7 +90,7 @@ func Run(task []func() error, N int, M int) (int, error) {
 
 // worker Обработчик для выполнения функций из канала jobs
 // res - канал для результатов
-// stopJob - канал для прекаращения обработки.
+// stopJob - канал для прекращения обработки.
 func worker(id int, jobs <-chan job, res chan<- result, stopJob <-chan struct{}) {
 	for {
 		select {
@@ -134,7 +134,7 @@ func newTask(num int, isError bool) func() error {
 
 // GenTask Генерация среза функций
 func GenTask(N int, M int) []func() error {
-	log.Infof("GenTask. Count funcs: %d. Max errors: %d", N, M)
+	log.Infof("GenTask. Count funcs: %d. Errors: %d", N, M)
 	var ff []func() error
 	for i := 0; i < N; i++ {
 		if M > 0 {
