@@ -1,25 +1,39 @@
 APP=gocopy
 SOURSE=. 
-GO_TEST_DIRS = $(shell \
-	find . -name "*_test.go" -not -path "./vendor/*" | \
+RELEASE_DIR=bin
+
+GO_SRC_DIRS := $(shell \
+	find . -name "*.go" -not -path "./vendor/*" | \
 	xargs -I {} dirname {}  | \
 	uniq)
-PACKAGES := $(shell go list ./... | grep -v /vendor/)
+GO_TEST_DIRS := $(shell \
+	find . -name "*_test.go" -not -path "./vendor/*" | \
+	xargs -I {} dirname {}  | \
+	uniq)	
 
 build:
 	go build -o ${APP} ${SOURSE}
 
 run:
-	go run $(SOURSE)
+	go run $(SOURSE) -from=files/file1 -to=files/file2
+	go run $(SOURSE) -from=files/file1 -to=files/file_limit -limit=5
+	go run $(SOURSE) -from=files/file1 -to=files/file_offset -offset=4	
+	go run $(SOURSE) -from=files/file1 -to=files/file_offset_limit -offset=5 -limit=10
+	go run $(SOURSE) -from=file_not_exists -to=out_file_err
+	go run $(SOURSE) -from=/dev/urandom -to=out_file_err
 
 test:
 	go vet $(PACKAGES)
-	go fmt $(PACKAGES) 
+	gofmt -w $(GO_SRC_DIRS) 
 	go test -v -count=1 $(GO_TEST_DIRS)
+
+release:
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o ${RELEASE_DIR}/win/${APP}.exe main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o ${RELEASE_DIR}/linux/${APP} main.go
 
 coverage:
 	go test -coverprofile=coverage.out.tmp $(GO_TEST_DIRS)
 	go tool cover -func=coverage.out.tmp
 	go tool cover -html=coverage.out.tmp
 
-.PHONY: build run test coverage
+.PHONY: build run test coverage release
