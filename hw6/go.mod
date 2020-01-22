@@ -1,4 +1,4 @@
-module hw6
+module github.com/mpuzanov/otus-go/hw6
 
 go 1.13
 

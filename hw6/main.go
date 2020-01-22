@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	cp "hw6/internal/app/gocopy"
 	"os"
+
+	cp "github.com/mpuzanov/otus-go/hw6/internal/app/gocopy"
 )
 
 var (
