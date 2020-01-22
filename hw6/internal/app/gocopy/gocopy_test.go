@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	cp "hw6/internal/app/gocopy"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	cp "github.com/mpuzanov/otus-go/hw6/internal/app/gocopy"
 )
 
 func TestCopy(t *testing.T) {
