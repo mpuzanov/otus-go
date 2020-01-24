@@ -3,7 +3,6 @@
 APP=go-envdir
 SOURSE=. 
 RELEASE_DIR=bin
-pkgs=$(shell go list ./... | fgrep -v /vendor)
 
 GO_SRC_DIRS := $(shell \
 	find . -name "*.go" -not -path "./vendor/*" | \
@@ -18,13 +17,15 @@ build:
 	go build -o ${APP} ${SOURSE} 
 	
 run: build
-	./go-envdir myEnv ls
-
+	@#./go-envdir myEnvExample ls -l
+	@#./go-envdir myEnvExample env
+	./go-envdir myEnvExample printenv EP1 
 
 test: lint
 	go test -v $(GO_TEST_DIRS)
 
 lint:
+	goimports -w ${GO_SRC_DIRS}
 	golangci-lint run
 
 release:

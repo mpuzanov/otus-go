@@ -1,28 +1,27 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
-	"github.com/mpuzanov/otus-go/hw7/internal/app/goenvdir"
+	"github.com/mpuzanov/otus-go/hw7/internal/goenvdir"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	fmt.Println(os.Args[:])
+	logrus.SetLevel(logrus.InfoLevel)
+
+	logrus.Trace(os.Args[:])
 
 	if len(os.Args) < 3 {
-		fmt.Println("usage: go-envdir /path/to/evndir command arg1 arg2")
+		logrus.Info("usage: go-envdir /path/to/evndir command arg1 arg2")
 		os.Exit(0)
 	}
-	//fmt.Println("path:", os.Args[1])
+
 	env, err := goenvdir.ReadDir(os.Args[1])
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
+		logrus.Fatal(err)
 	}
 
-	//fmt.Println("command arg1 arg2:", os.Args[2:])
 	res := goenvdir.RunCmd(os.Args[2:], env)
-	fmt.Println(res)
-
+	logrus.Trace("ExitCode:", res)
 }
