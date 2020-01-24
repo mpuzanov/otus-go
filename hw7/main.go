@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/mpuzanov/otus-go/hw7/internal/goenvdir"
@@ -13,7 +14,7 @@ func main() {
 	logrus.Trace(os.Args[:])
 
 	if len(os.Args) < 3 {
-		logrus.Info("usage: go-envdir /path/to/evndir command arg1 arg2")
+		fmt.Println("usage: go-envdir /path/to/evndir command arg1 arg2")
 		os.Exit(0)
 	}
 
