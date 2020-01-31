@@ -38,6 +38,21 @@ func TestReadDir(t *testing.T) {
 	if err != nil {
 		logrus.Fatal(err)
 	}
+	file = filepath.Join(testDir, "ENV3=")
+	err = ioutil.WriteFile(file, []byte("var3"), 0644)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	file = filepath.Join(testDir, "ENV 4")
+	err = ioutil.WriteFile(file, []byte(""), 0644)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	file = filepath.Join(testDir, "ENV_5")
+	err = ioutil.WriteFile(file, []byte(" 111 		"), 0644)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 	//=============================
 
 	testCases := []struct {
@@ -49,7 +64,7 @@ func TestReadDir(t *testing.T) {
 		{
 			desc: "Test 1",
 			path: testDir,
-			want: map[string]string{"ENV1": "123", "ENV2": "var2"},
+			want: map[string]string{"ENV1": "123", "ENV2": "var2", "ENV_5": "111"},
 			err:  nil,
 		},
 	}

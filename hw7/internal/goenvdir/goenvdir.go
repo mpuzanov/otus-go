@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 )
@@ -29,14 +30,27 @@ func ReadDir(dir string) (map[string]string, error) {
 	}
 
 	for _, file := range files {
+		// обрабатываем только файлы
+		if file.IsDir() {
+			continue
+		}
+		// проверяем вхождение запрещенных символов в имени
+		if strings.ContainsAny(file.Name(), "=. ") {
+			continue
+		}
 		fileName := filepath.Join(dir, file.Name())
 		content, err := ioutil.ReadFile(fileName)
 		if err != nil {
 			return res, err
 		}
-		logrus.Trace(file.Name(), "=", string(content))
-		res[file.Name()] = string(content)
+		// убираем пробелы и табуляцию с двух сторон
+		s := strings.Trim(string(content), "\t ")
 
+		logrus.Trace(file.Name(), "=", s)
+		if s == "" {
+			continue
+		}
+		res[file.Name()] = s
 	}
 	logrus.Trace(res)
 	return res, nil

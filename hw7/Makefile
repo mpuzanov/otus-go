@@ -26,7 +26,8 @@ test: lint
 
 lint:
 	goimports -w ${GO_SRC_DIRS}
-	golangci-lint run
+	golint ${GO_SRC_DIRS}
+	@#golangci-lint run
 
 release:
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o ${RELEASE_DIR}/win/${APP}.exe main.go
