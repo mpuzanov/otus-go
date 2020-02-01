@@ -19,7 +19,7 @@ build:
 run: build
 	@#./go-envdir myEnvExample ls -l
 	@#./go-envdir myEnvExample env
-	./go-envdir myEnvExample printenv EP1 
+	./go-envdir myEnvExample printenv ep1
 
 test: lint
 	go test -v $(GO_TEST_DIRS)
