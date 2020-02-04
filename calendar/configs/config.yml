@@ -1,0 +1,8 @@
+#ip и port на котором должен слушать web-сервер
+http_listen: ""
+#уровень логирования (error / warn / info / debug)
+log_level: info
+#путь к файлу логов
+log_file: ""
+#Настройки СУБД
+database_url: ""
