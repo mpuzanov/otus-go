@@ -58,10 +58,6 @@ func ReadDir(dir string) (map[string]string, error) {
 		if s == "" {
 			logrus.Tracef("файл пустой (удаляем env-переменную %s)", shortName)
 			os.Unsetenv(shortName)
-			_, ok := os.LookupEnv(shortName)
-			if ok {
-				return res, fmt.Errorf("удалить переменную %s неудалось", shortName)
-			}
 			continue
 		}
 		logrus.Trace(shortName, "=", s)
