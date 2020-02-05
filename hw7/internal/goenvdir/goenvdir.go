@@ -1,6 +1,7 @@
 package goenvdir
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -17,6 +18,13 @@ func init() {
 }
 
 var out io.Writer = os.Stdout
+var (
+	//ErrFailNameEnv ошибка "Некорректное имя для переменной окружения"
+	ErrFailNameEnv = errors.New("Некорректное имя для переменной окружения")
+
+	//ErrEnvNotIsDir ошибка "Не должно быть вложенных каталогов"
+	ErrEnvNotIsDir = errors.New("Не должно быть вложенных каталогов")
+)
 
 //ReadDir сканирует указанный каталог и возвращает все переменные окружения, определенные в нем.
 func ReadDir(dir string) (map[string]string, error) {
@@ -32,25 +40,32 @@ func ReadDir(dir string) (map[string]string, error) {
 	for _, file := range files {
 		// обрабатываем только файлы
 		if file.IsDir() {
-			continue
+			return res, ErrEnvNotIsDir
 		}
 		// проверяем вхождение запрещенных символов в имени
 		if strings.ContainsAny(file.Name(), "=. ") {
-			continue
+			return res, fmt.Errorf("%w: %s", ErrFailNameEnv, file.Name())
 		}
 		fileName := filepath.Join(dir, file.Name())
+		shortName := file.Name()
 		content, err := ioutil.ReadFile(fileName)
 		if err != nil {
 			return res, err
 		}
-		// убираем пробелы и табуляцию с двух сторон
-		s := strings.Trim(string(content), "\t ")
+		// убираем пустые символы
+		s := strings.TrimSpace(string(content))
 
-		logrus.Trace(file.Name(), "=", s)
 		if s == "" {
+			logrus.Tracef("файл пустой (удаляем env-переменную %s)", shortName)
+			os.Unsetenv(shortName)
+			_, ok := os.LookupEnv(shortName)
+			if ok {
+				return res, fmt.Errorf("удалить переменную %s неудалось", shortName)
+			}
 			continue
 		}
-		res[file.Name()] = s
+		logrus.Trace(shortName, "=", s)
+		res[shortName] = s
 	}
 	logrus.Trace(res)
 	return res, nil

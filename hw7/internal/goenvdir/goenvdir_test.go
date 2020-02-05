@@ -2,6 +2,7 @@ package goenvdir
 
 import (
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -13,6 +14,7 @@ import (
 
 func init() {
 	logrus.SetLevel(logrus.ErrorLevel)
+	//logrus.SetLevel(logrus.TraceLevel)
 }
 
 func TestReadDir(t *testing.T) {
@@ -35,16 +37,6 @@ func TestReadDir(t *testing.T) {
 	}
 	file = filepath.Join(testDir, "ENV2")
 	err = ioutil.WriteFile(file, []byte("var2"), 0644)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	file = filepath.Join(testDir, "ENV3=")
-	err = ioutil.WriteFile(file, []byte("var3"), 0644)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	file = filepath.Join(testDir, "ENV 4")
-	err = ioutil.WriteFile(file, []byte(""), 0644)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -76,6 +68,169 @@ func TestReadDir(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tC.want) {
 				t.Errorf("%s, got=%v, want=%v", tC.desc, got, tC.want)
+			}
+		})
+	}
+	//=============================
+	//удалить каталог с файлами
+	err = os.RemoveAll(testDir)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+}
+
+//TestReadDirInDir Тест вложенного каталога
+func TestReadDirInDir(t *testing.T) {
+
+	//=============================
+	testDir := "testDir"
+	testDirIn := "testDir/tmp"
+	//создаём каталог
+	_, err := os.Stat(testDir)
+	if os.IsNotExist(err) {
+		errDir := os.MkdirAll(testDir, 0755)
+		if errDir != nil {
+			logrus.Fatal(err)
+		}
+	}
+	if os.IsNotExist(err) {
+		errDir := os.MkdirAll(testDirIn, 0755)
+		if errDir != nil {
+			logrus.Fatal(err)
+		}
+	}
+
+	testCases := []struct {
+		desc string
+		path string
+		want map[string]string
+		err  error
+	}{
+		{
+			desc: "Тест вложенного каталога",
+			path: testDir,
+			want: map[string]string{},
+			err:  ErrEnvNotIsDir,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			got, err := ReadDir(tC.path)
+			if err != tC.err {
+				t.Errorf("%s, error: %v", tC.desc, err)
+			}
+			if !reflect.DeepEqual(got, tC.want) {
+				t.Errorf("%s, got=%v, want=%v", tC.desc, got, tC.want)
+			}
+		})
+	}
+	//=============================
+	//удалить каталог с файлами
+	err = os.RemoveAll(testDir)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+}
+
+//TestReadDirInDir Тестирование плохого имени файла для переменной
+func TestReadFailEnv(t *testing.T) {
+
+	//=============================
+	testDir := "testDir"
+	//создаём каталог
+	_, err := os.Stat(testDir)
+	if os.IsNotExist(err) {
+		errDir := os.MkdirAll(testDir, 0755)
+		if errDir != nil {
+			logrus.Fatal(err)
+		}
+	}
+	file := filepath.Join(testDir, "ENV3=")
+	err = ioutil.WriteFile(file, []byte("var3"), 0644)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	testCases := []struct {
+		desc string
+		path string
+		want map[string]string
+		err  error
+	}{
+		{
+			desc: "Тест плохого имени файла для переменной",
+			path: testDir,
+			want: map[string]string{},
+			err:  ErrFailNameEnv,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			got, err := ReadDir(tC.path)
+			if !errors.Is(err, tC.err) {
+				t.Errorf("%s error: %v", tC.desc, err)
+			}
+			if !reflect.DeepEqual(got, tC.want) {
+				t.Errorf("%s, got=%v, want=%v", tC.desc, got, tC.want)
+			}
+		})
+	}
+	//=============================
+	//удалить каталог с файлами
+	err = os.RemoveAll(testDir)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+}
+
+//TestReadDirInDir Тест пустого файла для переменной
+func TestReadEmptyFile(t *testing.T) {
+
+	//=============================
+	testDir := "testDir"
+	//создаём каталог
+	_, err := os.Stat(testDir)
+	if os.IsNotExist(err) {
+		errDir := os.MkdirAll(testDir, 0755)
+		if errDir != nil {
+			logrus.Fatal(err)
+		}
+	}
+	file := filepath.Join(testDir, "PASSWORD")
+	err = ioutil.WriteFile(file, []byte(""), 0644)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	testCases := []struct {
+		desc string
+		path string
+		env  string
+		want map[string]string
+		err  error
+	}{
+		{
+			desc: "Тест пустого файла для переменной",
+			path: testDir,
+			env:  "PASSWORD",
+			want: map[string]string{},
+			err:  nil,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			os.Setenv(tC.env, "12345")
+
+			got, err := ReadDir(tC.path)
+			if !errors.Is(err, tC.err) {
+				t.Errorf("%s error: %v", tC.desc, err)
+			}
+			if !reflect.DeepEqual(got, tC.want) {
+				t.Errorf("%s, got=%v, want=%v", tC.desc, got, tC.want)
+			}
+			v, ok := os.LookupEnv(tC.env)
+			if ok {
+				t.Errorf("%s, got=%v, want=%v", tC.desc, v, tC.want)
 			}
 		})
 	}
