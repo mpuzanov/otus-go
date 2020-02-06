@@ -1,4 +1,4 @@
-package memstore_test
+package memory_test
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/mpuzanov/otus-go/calendar/internal/model"
-	m "github.com/mpuzanov/otus-go/calendar/internal/store/memstore"
+	m "github.com/mpuzanov/otus-go/calendar/internal/storage/memory"
 )
 
 func TestFindEventByHeader(t *testing.T) {
@@ -108,7 +108,7 @@ func TestDelEvent(t *testing.T) {
 			event := model.Event{Header: "Event X", Date: time.Now()}
 			testStore.Events = append(testStore.Events, event)
 
-			if err := testStore.DelEvent(tC.eventDel); err != nil {
+			if err := testStore.DelEvent(&tC.eventDel); err != nil {
 				if !errors.Is(err, tC.err) {
 					t.Errorf("%s error: %v", tC.desc, err)
 				}
@@ -145,7 +145,7 @@ func TestSetEvent(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			tC.event.Description = tC.toDesc
-			if err := testStore.SetEvent(tC.event); err != nil {
+			if err := testStore.SetEvent(&tC.event); err != nil {
 				if !errors.Is(err, tC.err) {
 					t.Errorf("%s error: %v", tC.desc, err)
 				}

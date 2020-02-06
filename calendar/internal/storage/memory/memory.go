@@ -1,4 +1,4 @@
-package memstore
+package memory
 
 import (
 	"crypto/rand"
@@ -15,17 +15,17 @@ type EventStore struct {
 }
 
 //NewEventStore Возвращаем новое хранилище
-func NewEventStore() EventStore {
-	return EventStore{Events: make([]model.Event, 0)}
+func NewEventStore() *EventStore {
+	return &EventStore{Events: make([]model.Event, 0)}
 }
 
 //GetEvents Листинг событий
-func (s EventStore) GetEvents() []model.Event {
+func (s *EventStore) GetEvents() []model.Event {
 	return s.Events
 }
 
 //FindEventByHeader Найти событие
-func (s EventStore) FindEventByHeader(header string) (*model.Event, error) {
+func (s *EventStore) FindEventByHeader(header string) (*model.Event, error) {
 	for _, event := range s.Events {
 		if event.Header == header {
 			return &event, nil
@@ -46,10 +46,10 @@ func (s *EventStore) AddEvent(event *model.Event) error {
 }
 
 //SetEvent Изменить событие
-func (s *EventStore) SetEvent(event model.Event) error {
+func (s *EventStore) SetEvent(event *model.Event) error {
 	for i, ev := range s.Events {
 		if ev.UUID == event.UUID {
-			s.Events[i] = event
+			s.Events[i] = *event
 			return nil
 		}
 	}
@@ -57,7 +57,7 @@ func (s *EventStore) SetEvent(event model.Event) error {
 }
 
 //DelEvent Удалить событие
-func (s *EventStore) DelEvent(event model.Event) error {
+func (s *EventStore) DelEvent(event *model.Event) error {
 	for i, ev := range s.Events {
 		if ev.UUID == event.UUID && ev.Header == event.Header && ev.Date == event.Date {
 			s.Events = append(s.Events[:i], s.Events[i+1:]...)
@@ -68,7 +68,7 @@ func (s *EventStore) DelEvent(event model.Event) error {
 }
 
 //String Печать списка событий
-func (s EventStore) String() {
+func (s *EventStore) String() {
 	for _, ev := range s.Events {
 		fmt.Println(ev)
 	}
