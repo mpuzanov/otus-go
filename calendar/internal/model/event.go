@@ -18,7 +18,7 @@ type Event struct {
 	// Описание события
 	Description string
 	// Пользователь, владелец события
-	User
+	User string
 }
 
 //String Строковое представление события
