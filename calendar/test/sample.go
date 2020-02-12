@@ -1,48 +1,51 @@
-package storage
+package test
 
 import (
 	"fmt"
 	"log"
 	"time"
 
-	"github.com/mpuzanov/otus-go/calendar/internal/model"
-	m "github.com/mpuzanov/otus-go/calendar/internal/storage/memory"
+	c "github.com/mpuzanov/otus-go/calendar/internal/calendar"
 )
 
-//ISample пример работы с календарём через Интерфейс
-func ISample() {
+//SampleWorkCalendar пример работы с календарём через Интерфейс
+func SampleWorkCalendar() {
 	var err error
 
-	fmt.Println("=====================================")
-	fmt.Println("Работаем с календарём через Интерфейс")
+	fmt.Println("================================================")
+	fmt.Println("Проверяем работу календаря")
 	fmt.Println("создаём структуру хранения событий")
-	err = NewStorage(Memory)
+	err = c.NewCalendar(c.MemorySlice)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Добавляем событие")
-	event := model.Event{Header: "Событие 1", Date: time.Now()}
-	err = DB.AddEvent(&event)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = DB.AddEvent(m.NewEvent("Событие 2", time.Now()))
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Показываем результат:")
-	fmt.Println(DB.GetEvents())
+	fmt.Println("Добавляем 2 события")
+	startTime, _ := time.Parse("2006-01-02 15:04", "2020-04-01 09:00")
+	endTime, _ := time.Parse("2006-01-02 15:04", "2020-04-01 10:30")
 
-	fmt.Println("Удаляем событие c UUID:", event.UUID)
-	err = DB.DelEvent(&event)
+	event1, err := c.DB.CreateEvent("user1", "Событие 1", "", startTime, endTime)
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = c.DB.CreateEvent("user1", "Событие 2", "", startTime, endTime)
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("Показываем результат:")
-	fmt.Println(DB.GetEvents())
+	fmt.Println(c.DB.GetEvents())
+
+	fmt.Println("Удаляем событие c UUID:", event1.ID)
+	err = c.DB.DelEvent(event1)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Показываем результат:")
+	fmt.Println(c.DB.GetEvents())
+	fmt.Println("================================================")
 }
 
+/*
 //Sample пример работы с календарём
 func Sample() {
 	var err error
@@ -63,7 +66,7 @@ func Sample() {
 	fmt.Println("Показываем результат:")
 	fmt.Println(listEvent)
 
-	fmt.Println("Удаляем событие c UUID:", event.UUID)
+	fmt.Println("Удаляем событие c ID:", event.ID)
 	err = listEvent.DelEvent(event)
 	if err != nil {
 		log.Fatal(err)
@@ -71,3 +74,4 @@ func Sample() {
 	fmt.Println("Показываем результат:")
 	fmt.Println(listEvent)
 }
+*/

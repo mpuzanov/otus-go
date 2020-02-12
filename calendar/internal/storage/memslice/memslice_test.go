@@ -1,4 +1,4 @@
-package memory_test
+package memslice_test
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/mpuzanov/otus-go/calendar/internal/model"
-	m "github.com/mpuzanov/otus-go/calendar/internal/storage/memory"
+	m "github.com/mpuzanov/otus-go/calendar/internal/storage/memslice"
 )
 
 var (
@@ -33,11 +33,6 @@ func generateTestData() {
 }
 
 func TestFindEventByID(t *testing.T) {
-	var eventFind model.Event
-	for _, val := range testStore.Events {
-		eventFind = val
-		break
-	}
 
 	testCases := []struct {
 		desc string
@@ -47,8 +42,8 @@ func TestFindEventByID(t *testing.T) {
 	}{
 		{
 			desc: "Тест 1",
-			find: eventFind.ID.String(),
-			want: eventFind.ID.String(),
+			find: testStore.Events[1].ID.String(),
+			want: testStore.Events[1].ID.String(),
 			err:  nil,
 		},
 	}
@@ -108,11 +103,10 @@ func TestDelEvent(t *testing.T) {
 
 	var eventTestDel model.Event
 
-	for _, val := range testStore.Events {
-		eventTestDel = val
-		break
-	}
 	countEvent := len(testStore.Events)
+	//Добавляем событие для удаления
+	eventTestDel = *m.NewEvent("user1", "Event del_1", "", startTime, endTime)
+	testStore.Events = append(testStore.Events, eventTestDel)
 
 	testCases := []struct {
 		desc     string
@@ -124,13 +118,13 @@ func TestDelEvent(t *testing.T) {
 			desc:     "Тест удаления события",
 			eventDel: eventTestDel,
 			err:      nil,
-			want:     countEvent - 1,
+			want:     countEvent,
 		},
 		{
 			desc:     "Тест удаления события (должна быть ошибка)", //нет такого события
 			eventDel: eventTestDel,
 			err:      model.ErrDelEvent,
-			want:     countEvent - 1,
+			want:     countEvent,
 		},
 	}
 	for _, tC := range testCases {
@@ -152,11 +146,7 @@ func TestDelEvent(t *testing.T) {
 
 func TestUpdateEvent(t *testing.T) {
 
-	var eventTest model.Event
-	for _, val := range testStore.Events {
-		eventTest = val
-		break
-	}
+	eventTest = testStore.Events[0]
 
 	testCases := []struct {
 		desc   string
@@ -175,17 +165,15 @@ func TestUpdateEvent(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-
 			tC.event.Text = tC.toText
 			if err := testStore.UpdateEvent(&tC.event); err != nil {
 				if !errors.Is(err, tC.err) {
 					t.Errorf("%s error: %v", tC.desc, err)
 				}
 			}
-			got, err := testStore.FindEventByID(eventTest.ID.String())
-
-			if got.Text != tC.want || err != nil {
-				t.Errorf("%s, got=%v, expected=%v", tC.desc, got.Text, tC.want)
+			got := testStore.Events[0].Text
+			if got != tC.want {
+				t.Errorf("%s, got=%v, expected=%v", tC.desc, got, tC.want)
 			}
 		})
 	}

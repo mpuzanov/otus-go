@@ -1,4 +1,4 @@
-package memory
+package memslice
 
 import (
 	"fmt"
@@ -10,64 +10,61 @@ import (
 
 //EventStore структура хранения списка событий
 type EventStore struct {
-	Events map[string]model.Event
+	Events []model.Event
 }
 
 //NewEventStore Возвращаем новое хранилище
 func NewEventStore() *EventStore {
-	return &EventStore{Events: make(map[string]model.Event)}
+	return &EventStore{Events: make([]model.Event, 0)}
 }
 
 //GetEvents Листинг событий
 func (s *EventStore) GetEvents() []model.Event {
-	var out []model.Event
-	for _, val := range s.Events {
-		out = append(out, val)
-	}
-	return out
+	return s.Events
 }
 
 //FindEventByID Найти событие
 func (s *EventStore) FindEventByID(id string) (*model.Event, error) {
-
-	ev, exist := s.Events[id]
-	if exist {
-		return &ev, nil
+	for _, event := range s.Events {
+		if event.ID.String() == id {
+			return &event, nil
+		}
 	}
 	return nil, model.ErrNotEvent
 }
 
 //AddEvent Добавить событие
 func (s *EventStore) AddEvent(event *model.Event) error {
-	id := event.ID.String()
-	_, exist := s.Events[id]
-	if exist {
+	ev, _ := s.FindEventByID(event.ID.String())
+	if ev != nil {
 		return fmt.Errorf("событие: %s(%s) уже существует. %w", event.Header, event.ID, model.ErrAddEvent)
 	}
-	s.Events[id] = *event
+	s.Events = append(s.Events, *event)
+
 	return nil
 }
 
 //UpdateEvent Изменить событие
 func (s *EventStore) UpdateEvent(event *model.Event) error {
-	id := event.ID.String()
-	_, exist := s.Events[id]
-	if !exist {
-		return fmt.Errorf("нет события: %s(%s). %w", event.Header, event.ID, model.ErrEditEvent)
+	for i, ev := range s.Events {
+		if ev.ID == event.ID {
+			s.Events[i] = *event
+			return nil
+		}
 	}
-	s.Events[id] = *event
-	return nil
+	return fmt.Errorf("нет события: %s(%s). %w", event.Header, event.ID, model.ErrEditEvent)
 }
 
 //DelEvent Удалить событие
 func (s *EventStore) DelEvent(event *model.Event) error {
-	id := event.ID.String()
-	_, exist := s.Events[id]
-	if !exist {
-		return fmt.Errorf("нет события: %s(%s). %w", event.Header, event.ID, model.ErrDelEvent)
+
+	for i, ev := range s.Events {
+		if ev.ID == event.ID {
+			s.Events = append(s.Events[:i], s.Events[i+1:]...)
+			return nil
+		}
 	}
-	delete(s.Events, id)
-	return nil
+	return fmt.Errorf("нет события с кодом: %s. %w", event.ID, model.ErrDelEvent)
 }
 
 //String Печать списка событий
