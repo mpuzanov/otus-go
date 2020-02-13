@@ -13,7 +13,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mpuzanov/otus-go/calendar/internal/calendar"
 	"github.com/mpuzanov/otus-go/calendar/pkg/logger"
-	"github.com/mpuzanov/otus-go/calendar/test"
 	"go.uber.org/zap"
 )
 
@@ -25,15 +24,16 @@ type myHandler struct {
 
 // Start Запуск сервера
 func Start(config *Config) error {
-	//err := calendar.NewCalendar(calendar.MemorySlice)
-	err := calendar.NewCalendar(calendar.MemoryMap)
+	//err := calendar.NewCalendar(calendar.MemorySlice, "")
+	err := calendar.NewCalendar(calendar.MemoryMap, "")
+	//err := calendar.NewCalendar(calendar.Postgres, config.DatabaseURL)
 	if err != nil {
 		return err
 	}
 
 	srv := newServer(calendar.DB, config)
 
-	test.SampleWorkCalendar()
+	sampleWorkCalendar()
 
 	//запускаем веб-сервер
 	go func() {
@@ -70,7 +70,7 @@ func newServer(store calendar.Calendar, config *Config) *http.Server {
 
 	handler := &myHandler{
 		router: mux.NewRouter(),
-		logger: logger.NewLogger(cfglog), //logger.InitLogger(cfglog), //
+		logger: logger.NewLogger(cfglog), //logger.InitLogger(cfglog),
 		store:  store,
 	}
 	handler.configRouter()

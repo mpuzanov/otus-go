@@ -1,4 +1,4 @@
-package test
+package apiserver
 
 import (
 	"fmt"
@@ -8,14 +8,14 @@ import (
 	c "github.com/mpuzanov/otus-go/calendar/internal/calendar"
 )
 
-//SampleWorkCalendar пример работы с календарём через Интерфейс
-func SampleWorkCalendar() {
+//sampleWorkCalendar пример работы с календарём
+func sampleWorkCalendar() {
 	var err error
 
 	fmt.Println("================================================")
 	fmt.Println("Проверяем работу календаря")
 	fmt.Println("создаём структуру хранения событий")
-	err = c.NewCalendar(c.MemorySlice)
+	err = c.NewCalendar(c.MemorySlice, "")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,34 +44,3 @@ func SampleWorkCalendar() {
 	fmt.Println(c.DB.GetEvents())
 	fmt.Println("================================================")
 }
-
-/*
-//Sample пример работы с календарём
-func Sample() {
-	var err error
-
-	fmt.Println("создаём структуру хранения событий")
-	listEvent := m.NewEventStore()
-
-	fmt.Println("Добавляем событие")
-	event := m.NewEvent("Событие 1", time.Now())
-	err = listEvent.AddEvent(event)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = listEvent.AddEvent(m.NewEvent("Событие 2", time.Now()))
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Показываем результат:")
-	fmt.Println(listEvent)
-
-	fmt.Println("Удаляем событие c ID:", event.ID)
-	err = listEvent.DelEvent(event)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Показываем результат:")
-	fmt.Println(listEvent)
-}
-*/

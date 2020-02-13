@@ -6,6 +6,7 @@ import (
 	"github.com/mpuzanov/otus-go/calendar/internal/model"
 	"github.com/mpuzanov/otus-go/calendar/internal/storage/memory"
 	"github.com/mpuzanov/otus-go/calendar/internal/storage/memslice"
+	"github.com/mpuzanov/otus-go/calendar/internal/storage/postgresdb"
 )
 
 const (
@@ -31,8 +32,8 @@ type Calendar interface {
 }
 
 //NewCalendar создание интерфейс для работы со структурой календаря
-func NewCalendar(storageType int) error {
-	//var err error
+func NewCalendar(storageType int, dsn string) error {
+	var err error
 
 	switch storageType {
 	case MemorySlice:
@@ -40,11 +41,11 @@ func NewCalendar(storageType int) error {
 	case MemoryMap:
 		DB = new(memory.EventStore)
 
-		// case Postgres:
-		// 	DB, err = storage.InitDB()
-		// 	if err != nil {
-		// 		return err
-		// 	}
+	case Postgres:
+		DB, err = postgresdb.NewPgEventStore(dsn)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
