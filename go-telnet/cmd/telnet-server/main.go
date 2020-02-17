@@ -41,7 +41,7 @@ func handleConnection(conn net.Conn) {
 
 	//каждое соединение на 60 сек для проверки
 	ctx := context.Background()
-	ctx, _ = context.WithTimeout(ctx, time.Duration(60)*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(60)*time.Second)
 
 	log.Printf("connected %s\n", conn.RemoteAddr())
 	conn.Write([]byte(fmt.Sprintf("Welcome to %s, friend from %s\n", conn.LocalAddr(), conn.RemoteAddr())))
@@ -58,7 +58,7 @@ OUTER:
 				text := scanner.Text()
 				log.Printf("received from %s: %s", conn.RemoteAddr(), text)
 				if text == "quit" || text == "exit" {
-					break
+					break OUTER
 				} else if text != "" {
 					conn.Write([]byte(fmt.Sprintf("I have received '%s'\n", text)))
 				}
@@ -68,5 +68,6 @@ OUTER:
 			}
 		}
 	}
+	cancel()
 	log.Printf("Closing connection with %s", conn.RemoteAddr())
 }

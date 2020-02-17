@@ -1,4 +1,4 @@
-SOURCE=./cmd/go-telnet
+SOURCE=.
 APP=go-telnet
 GOBASE=$(shell pwd)
 RELEASE_DIR=$(GOBASE)/bin

@@ -83,7 +83,7 @@ OUTER:
 			log.Printf("From server: %s", text)
 		}
 	}
-	log.Printf("Finished readRoutine")
+	//log.Printf("Finished readRoutine")
 }
 
 func writeRoutine(chanExit chan int, conn net.Conn) {
@@ -104,12 +104,13 @@ OUTER:
 				}
 			}
 		} else { // EOF
+			conn.Write([]byte("exit")) // send exit to server
 			break OUTER
 		}
-	}	
+	}
 	log.Printf("close connection\n")
 	chanExit <- 1
-	log.Printf("Finished writeRoutine")
+	//log.Printf("Finished writeRoutine")
 }
 
 //go run . --timeout 15s 127.0.0.1 8080
