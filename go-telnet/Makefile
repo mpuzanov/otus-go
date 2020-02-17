@@ -1,4 +1,4 @@
-SOURCE=.
+SOURCE=./cmd/go-telnet
 APP=go-telnet
 GOBASE=$(shell pwd)
 RELEASE_DIR=$(GOBASE)/bin
@@ -33,4 +33,8 @@ release:
 	GOOS=windows GOARCH=amd64 go build -ldflags="-H windowsgui" -o ${RELEASE_DIR}/${APP}.exe main.go
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o ${RELEASE_DIR}/${APP} main.go
 
-.PHONY: build run release lint test
+install:
+	go install ./cmd/go-telnet
+
+
+.PHONY: build run release lint test install
