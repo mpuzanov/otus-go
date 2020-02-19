@@ -3,49 +3,46 @@ package calendar
 import (
 	"time"
 
+	"github.com/mpuzanov/otus-go/calendar/internal/interfaces"
 	"github.com/mpuzanov/otus-go/calendar/internal/model"
-	"github.com/mpuzanov/otus-go/calendar/internal/storage/memory"
-	"github.com/mpuzanov/otus-go/calendar/internal/storage/memslice"
-	"github.com/mpuzanov/otus-go/calendar/internal/storage/postgresdb"
 )
 
-const (
-	//Postgres работа с БД
-	Postgres int = iota
-	// MemorySlice хранение событий в slice
-	MemorySlice
-	// MemoryMap хранение событий в map
-	MemoryMap
-)
-
-//DB интерфейс для взаимодействия с данными на нескольких уровнях
-var DB Calendar
-
-//Calendar интерфейс для работы со структурой календаря
-type Calendar interface {
-	CreateEvent(user, header, text string, startTime time.Time, endTime time.Time) (*model.Event, error)
-	AddEvent(event *model.Event) error
-	UpdateEvent(event *model.Event) error
-	DelEvent(event *model.Event) error
-	FindEventByID(id string) (*model.Event, error)
-	GetEvents() []model.Event
+//Calendar сервис календаря
+type Calendar struct {
+	Events interfaces.EventStorage
 }
 
-//NewCalendar создание интерфейс для работы со структурой календаря
-func NewCalendar(storageType int, dsn string) error {
-	var err error
+// NewCalendar - конструктор календаря
+func NewCalendar(repository interfaces.EventStorage) *Calendar {
+	return &Calendar{Events: repository}
+}
 
-	switch storageType {
-	case MemorySlice:
-		DB = new(memslice.EventStore)
-	case MemoryMap:
-		DB = new(memory.EventStore)
+//CreateEvent Создаём событие
+func (c *Calendar) CreateEvent(user, header, text string, startTime time.Time, endTime time.Time) (*model.Event, error) {
+	return c.Events.CreateEvent(user, header, text, startTime, endTime)
+}
 
-	case Postgres:
-		DB, err = postgresdb.NewPgEventStore(dsn)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+//AddEvent Добавление события
+func (c *Calendar) AddEvent(event *model.Event) error {
+	return c.Events.AddEvent(event)
+}
+
+//UpdateEvent Редактирование события
+func (c *Calendar) UpdateEvent(event *model.Event) error {
+	return c.Events.UpdateEvent(event)
+}
+
+//DelEvent Удаление события
+func (c *Calendar) DelEvent(event *model.Event) error {
+	return c.Events.DelEvent(event)
+}
+
+//FindEventByID Поиск события
+func (c *Calendar) FindEventByID(id string) (*model.Event, error) {
+	return c.Events.FindEventByID(id)
+}
+
+//GetEvents Выдаём список событий
+func (c *Calendar) GetEvents() []model.Event {
+	return c.Events.GetEvents()
 }

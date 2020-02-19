@@ -5,71 +5,72 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/mpuzanov/otus-go/calendar/internal/errors"
 	"github.com/mpuzanov/otus-go/calendar/internal/model"
 )
 
 //EventStore структура хранения списка событий
 type EventStore struct {
-	Events []model.Event
+	db []model.Event
 }
 
 //NewEventStore Возвращаем новое хранилище
 func NewEventStore() *EventStore {
-	return &EventStore{Events: make([]model.Event, 0)}
+	return &EventStore{db: make([]model.Event, 0)}
 }
 
 //GetEvents Листинг событий
 func (s *EventStore) GetEvents() []model.Event {
-	return s.Events
+	return s.db
 }
 
 //FindEventByID Найти событие
 func (s *EventStore) FindEventByID(id string) (*model.Event, error) {
-	for _, event := range s.Events {
+	for _, event := range s.db {
 		if event.ID.String() == id {
 			return &event, nil
 		}
 	}
-	return nil, model.ErrNotEvent
+	return nil, errors.ErrNotEvent
 }
 
 //AddEvent Добавить событие
 func (s *EventStore) AddEvent(event *model.Event) error {
 	ev, _ := s.FindEventByID(event.ID.String())
 	if ev != nil {
-		return fmt.Errorf("событие: %s(%s) уже существует. %w", event.Header, event.ID, model.ErrAddEvent)
+		return fmt.Errorf("событие: %s(%s) уже существует. %w", event.Header, event.ID, errors.ErrAddEvent)
 	}
-	s.Events = append(s.Events, *event)
+	s.db = append(s.db, *event)
 
 	return nil
 }
 
 //UpdateEvent Изменить событие
 func (s *EventStore) UpdateEvent(event *model.Event) error {
-	for i, ev := range s.Events {
+	for i, ev := range s.db {
 		if ev.ID == event.ID {
-			s.Events[i] = *event
+			s.db[i] = *event
 			return nil
 		}
 	}
-	return fmt.Errorf("нет события: %s(%s). %w", event.Header, event.ID, model.ErrEditEvent)
+	return fmt.Errorf("нет события: %s(%s). %w", event.Header, event.ID, errors.ErrEditEvent)
 }
 
 //DelEvent Удалить событие
 func (s *EventStore) DelEvent(event *model.Event) error {
 
-	for i, ev := range s.Events {
+	for i, ev := range s.db {
 		if ev.ID == event.ID {
-			s.Events = append(s.Events[:i], s.Events[i+1:]...)
+			s.db = append(s.db[:i], s.db[i+1:]...)
 			return nil
 		}
 	}
-	return fmt.Errorf("нет события с кодом: %s. %w", event.ID, model.ErrDelEvent)
+	return fmt.Errorf("нет события с кодом: %s. %w", event.ID, errors.ErrDelEvent)
 }
 
 //String Печать списка событий
 func (s *EventStore) String() {
-	for _, ev := range s.Events {
+	for _, ev := range s.db {
 		fmt.Println(ev)
 	}
 }

@@ -3,7 +3,11 @@ package main
 import (
 	"log"
 
-	"github.com/mpuzanov/otus-go/calendar/internal/apiserver"
+	"github.com/mpuzanov/otus-go/calendar/internal/calendar"
+	"github.com/mpuzanov/otus-go/calendar/internal/config"
+	"github.com/mpuzanov/otus-go/calendar/internal/storage"
+	"github.com/mpuzanov/otus-go/calendar/internal/web"
+	"github.com/mpuzanov/otus-go/calendar/pkg/logger"
 	flag "github.com/spf13/pflag"
 )
 
@@ -16,12 +20,29 @@ func init() {
 
 func main() {
 
-	cfg, err := apiserver.LoadConfig(configFile)
+	cfg, err := config.LoadConfig(configFile)
 	if err != nil {
 		log.Fatalf("Не удалось загрузить %s: %s", configFile, err)
 	}
 
-	if err := apiserver.Start(cfg); err != nil {
+	cfglog := logger.Configuration{
+		Level:      cfg.LogLevel,
+		JSONFormat: cfg.LogFormatJSON,
+		LogFile:    cfg.LogFile,
+	}
+	logger := logger.NewLogger(cfglog)
+
+	// Init db
+	db, err := storage.NewStorageDB(cfg.DbName, cfg.DatabaseURL)
+	if err != nil {
+		log.Fatalf("newStorageDB failed: %s", err)
+	}
+
+	calendar := calendar.NewCalendar(*db)
+
+	//sampleWorkCalendar(calendar)
+
+	if err := web.Start(cfg, logger, calendar); err != nil {
 		log.Fatal(err)
 	}
 

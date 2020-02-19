@@ -1,4 +1,4 @@
-package apiserver
+package config
 
 import (
 	"io/ioutil"
@@ -14,6 +14,7 @@ type Config struct {
 	LogLevel      string `yaml:"log_level"`
 	LogFile       string `yaml:"log_file"`
 	LogFormatJSON bool   `yaml:"log_format_JSON"`
+	DbName        string `yaml:"db_name"`
 	DatabaseURL   string `yaml:"db_url"`
 }
 

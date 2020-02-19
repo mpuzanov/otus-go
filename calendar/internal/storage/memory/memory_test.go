@@ -1,17 +1,16 @@
-package memory_test
+package memory
 
 import (
-	"errors"
 	"strconv"
 	"testing"
 	"time"
 
+	"github.com/mpuzanov/otus-go/calendar/internal/errors"
 	"github.com/mpuzanov/otus-go/calendar/internal/model"
-	m "github.com/mpuzanov/otus-go/calendar/internal/storage/memory"
 )
 
 var (
-	testStore          *m.EventStore
+	testStore          *EventStore
 	eventTest          model.Event
 	startTime, endTime time.Time
 	userName           string
@@ -26,7 +25,7 @@ func generateTestData() {
 	userName = "user1"
 	startTime = time.Date(2020, time.April, 1, 9, 0, 0, 0, time.UTC)
 	endTime, _ = time.Parse("2006-01-02 15:04", "2020-04-01 10:30")
-	testStore = m.NewEventStore()
+	testStore = NewEventStore()
 	for i := 1; i <= 10; i++ {
 		testStore.CreateEvent(userName, "Event "+strconv.Itoa(i), "", startTime, endTime)
 	}
@@ -34,7 +33,7 @@ func generateTestData() {
 
 func TestFindEventByID(t *testing.T) {
 	var eventFind model.Event
-	for _, val := range testStore.Events {
+	for _, val := range testStore.db {
 		eventFind = val
 		break
 	}
@@ -66,7 +65,7 @@ func TestFindEventByID(t *testing.T) {
 }
 
 func TestAddEvent(t *testing.T) {
-	countEvent := len(testStore.Events)
+	countEvent := len(testStore.db)
 	eventTest = model.Event{User: userName, Header: "Event Add", StartTime: startTime, EndTime: endTime}
 	testCases := []struct {
 		desc        string
@@ -83,7 +82,7 @@ func TestAddEvent(t *testing.T) {
 		{
 			desc:        "Test (error)", // Header совпадает
 			eventHeader: "Event Add",
-			err:         model.ErrAddEvent,
+			err:         errors.ErrAddEvent,
 			want:        countEvent + 1,
 		},
 	}
@@ -95,7 +94,7 @@ func TestAddEvent(t *testing.T) {
 					t.Errorf("%s error: %v", tC.desc, err)
 				}
 			}
-			got := len(testStore.Events)
+			got := len(testStore.db)
 			if got != tC.want {
 				t.Errorf("Error AddEvent. %s, got=%v, expected=%v", tC.desc, got, tC.want)
 			}
@@ -108,11 +107,11 @@ func TestDelEvent(t *testing.T) {
 
 	var eventTestDel model.Event
 
-	for _, val := range testStore.Events {
+	for _, val := range testStore.db {
 		eventTestDel = val
 		break
 	}
-	countEvent := len(testStore.Events)
+	countEvent := len(testStore.db)
 
 	testCases := []struct {
 		desc     string
@@ -129,7 +128,7 @@ func TestDelEvent(t *testing.T) {
 		{
 			desc:     "Тест удаления события (должна быть ошибка)", //нет такого события
 			eventDel: eventTestDel,
-			err:      model.ErrDelEvent,
+			err:      errors.ErrDelEvent,
 			want:     countEvent - 1,
 		},
 	}
@@ -142,7 +141,7 @@ func TestDelEvent(t *testing.T) {
 				}
 			}
 
-			got := len(testStore.Events)
+			got := len(testStore.db)
 			if got != tC.want {
 				t.Errorf("%s, got=%v, expected=%v", tC.desc, got, tC.want)
 			}
@@ -153,7 +152,7 @@ func TestDelEvent(t *testing.T) {
 func TestUpdateEvent(t *testing.T) {
 
 	var eventTest model.Event
-	for _, val := range testStore.Events {
+	for _, val := range testStore.db {
 		eventTest = val
 		break
 	}
