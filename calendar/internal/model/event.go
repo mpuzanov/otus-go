@@ -34,15 +34,3 @@ func (e Event) String() string {
 		e.EndTime.Format("2006.01.02 15.04.05"),
 	)
 }
-
-//NewEvent Формируем новое событие
-func NewEvent(user, header, text string, startTime time.Time, endTime time.Time) *Event {
-	return &Event{
-		ID:        uuid.New(),
-		User:      user,
-		Header:    header,
-		Text:      text,
-		StartTime: startTime,
-		EndTime:   endTime,
-	}
-}
