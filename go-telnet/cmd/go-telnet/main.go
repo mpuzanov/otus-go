@@ -15,14 +15,11 @@ import (
 
 var timeout time.Duration
 
-func usage() {
-	fmt.Printf("usage : %s host port\n", os.Args[0])
-	flag.PrintDefaults()
-	os.Exit(0)
-}
-
 func init() {
-	flag.Usage = usage
+	flag.Usage = func() {
+		fmt.Printf("usage : %s host port\n", os.Args[0])
+		flag.PrintDefaults()
+	}
 	flag.DurationVarP(&timeout, "timeout", "t", 10*time.Second, "timeout for connecting to the server")
 	flag.Parse()
 	if len(flag.Args()) < 2 {
