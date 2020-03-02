@@ -9,16 +9,16 @@ import (
 )
 
 var (
-	list0, list1 *dl.List
-	itemFirst,itemLast *dl.Item
+	list0, list1        *dl.List
+	itemFirst, itemLast *dl.Item
 )
 
 func init() {
 	list0 = dl.NewList()
 	list1 = dl.NewList()
-	itemFirst=list1.PushBack("Item 1")
+	itemFirst = list1.PushBack("Item 1")
 	list1.PushBack("Item 2")
-	itemLast=list1.PushBack("Item 3")
+	itemLast = list1.PushBack("Item 3")
 }
 
 func TestFirst(t *testing.T) {
@@ -31,16 +31,20 @@ func TestFirst(t *testing.T) {
 		{desc: "Last", lst: *list1, wont: itemLast},
 		{desc: "First", lst: *list1, wont: itemFirst},
 		{desc: "Len3", lst: *list1, wont: 3},
-		{desc: "Len0", lst: *list0, wont: 0},		
+		{desc: "Len0", lst: *list0, wont: 0},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			switch tC.desc {
-			case "Last":assert.Equal(t, tC.wont, tC.lst.Last())
-			case "First":assert.Equal(t, tC.wont, tC.lst.First())	
-			case "Len3":assert.Equal(t, tC.wont, tC.lst.Len())
-			case "Len0":assert.Equal(t, tC.wont, tC.lst.Len())						
-			}		
+			case "Last":
+				assert.Equal(t, tC.wont, tC.lst.Last())
+			case "First":
+				assert.Equal(t, tC.wont, tC.lst.First())
+			case "Len3":
+				assert.Equal(t, tC.wont, tC.lst.Len())
+			case "Len0":
+				assert.Equal(t, tC.wont, tC.lst.Len())
+			}
 		})
 	}
 }
