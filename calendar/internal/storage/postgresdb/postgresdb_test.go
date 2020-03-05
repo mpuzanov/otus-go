@@ -48,6 +48,10 @@ func TestGetUserEvents(t *testing.T) {
 	got, err := pg.GetUserEvents(UserTest)
 	assert.NoError(t, err)
 	assert.NotNil(t, got)
+
+	got, err = pg.GetUserEvents("UserNotFound")
+	assert.NoError(t, err)
+	assert.NotNil(t, got)	
 }
 
 func TestFindEventByID(t *testing.T) {
@@ -66,6 +70,12 @@ func TestFindEventByID(t *testing.T) {
 	got, err := pg.FindEventByID(id)
 	assert.NoError(t, err)
 	assert.NotNil(t, got)
+
+	//такой записи нет
+	id=uuid.New().String()
+	got, err = pg.FindEventByID(id)
+	assert.Error(t, err)
+	assert.Nil(t, got)
 }
 
 func TestUpdateEvent(t *testing.T) {
@@ -83,6 +93,11 @@ func TestUpdateEvent(t *testing.T) {
 	got, err := pg.UpdateEvent(eventTest)
 	assert.NoError(t, err)
 	assert.True(t, got)
+	//такой записи нет
+	eventTest.ID = uuid.New()
+	got, err = pg.UpdateEvent(eventTest)
+	assert.Error(t, err)
+	assert.False(t, got)
 }
 
 func TestDelEvent(t *testing.T) {
@@ -97,4 +112,9 @@ func TestDelEvent(t *testing.T) {
 	got, err := pg.DelEvent(id)
 	assert.NoError(t, err)
 	assert.True(t, got)
+	//такой записи нет
+	id=uuid.New().String()
+	got, err = pg.DelEvent(id)
+	assert.Error(t, err)
+	assert.False(t, got)	
 }

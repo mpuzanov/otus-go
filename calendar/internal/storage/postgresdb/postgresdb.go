@@ -48,13 +48,16 @@ func (pg *EventStore) AddEvent(event *model.Event) (string, error) {
 		"ReminderBefore": eDb.ReminderBefore.Get(),
 	}
 	nstmt, err := pg.db.PrepareNamedContext(pg.ctx, query)
+	if err != nil {
+		return "", err
+	}
+	defer nstmt.Close()
 	if err := nstmt.GetContext(pg.ctx, &id, p); err != nil {
 		if err == sql.ErrNoRows {
-			return "", err
+			return "", errors.ErrNoDBAffected
 		}
 		return "", err
 	}
-	nstmt.Close()
 	return id, nil
 }
 
@@ -75,18 +78,22 @@ func (pg *EventStore) UpdateEvent(event *model.Event) (bool, error) {
 	}
 	query := `UPDATE events SET (header, text, start_time, end_time, user_id, reminder_before) = 
 	(:Header, :Text, :StartTime, :EndTime, :UserName, :ReminderBefore) WHERE ID = :ID`
-	nstmt, _ := pg.db.PrepareNamedContext(pg.ctx, query)
-	if res, err := nstmt.ExecContext(pg.ctx, p); err != nil {
-		count, err := res.RowsAffected()
-		if err != nil {
-			return false, err
-		}
-		if count == 0 {
-			return false, errors.ErrNoDBAffected
-		}
+	nstmt, err := pg.db.PrepareNamedContext(pg.ctx, query)
+	if err != nil {
 		return false, err
 	}
-	nstmt.Close()
+	defer nstmt.Close()
+	res, err := nstmt.ExecContext(pg.ctx, p)
+	if err != nil {
+		return false, err
+	}
+	count, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	if count == 0 {
+		return false, errors.ErrNoDBAffected
+	}
 	return true, nil
 }
 
@@ -95,15 +102,16 @@ func (pg *EventStore) DelEvent(id string) (bool, error) {
 
 	p := map[string]interface{}{"ID": id}
 	nstmt, _ := pg.db.PrepareNamedContext(pg.ctx, "DELETE FROM events WHERE id = :ID")
-	if res, err := nstmt.ExecContext(pg.ctx, p); err != nil {
-		count, err := res.RowsAffected()
-		if err != nil {
-			return false, err
-		}
-		if count == 0 {
-			return false, errors.ErrNoDBAffected
-		}
+	res, err := nstmt.ExecContext(pg.ctx, p)
+	if err != nil {
 		return false, err
+	}
+	count, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	if count == 0 {
+		return false, errors.ErrNoDBAffected
 	}
 	nstmt.Close()
 	return true, nil
@@ -134,14 +142,13 @@ func (pg *EventStore) GetUserEvents(user string) ([]model.Event, error) {
 	outDB := make([]EventDB, 0)
 	out := make([]model.Event, 0)
 	nstmt, err := pg.db.PrepareNamedContext(pg.ctx, `select * from events where user_id=:user`)
-	err = nstmt.Select(&outDB, p)
-	if err == sql.ErrNoRows {
-		return out, nil
-	}
 	if err != nil {
 		return nil, err
 	}
-	nstmt.Close()
+	defer nstmt.Close()
+	if err = nstmt.Select(&outDB, p); err != nil {
+		return nil, err
+	}
 	for _, v := range outDB {
 		e, err := toEvent(&v)
 		if err != nil {
