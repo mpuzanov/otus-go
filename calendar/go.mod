@@ -12,8 +12,9 @@ require (
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/lib/pq v1.2.0 // indirect
-	github.com/shopspring/decimal v0.0.0-20180709203117-cd690d0c9e24 // indirect
-	github.com/spf13/pflag v1.0.5
+	github.com/shopspring/decimal v0.0.0-20200227202807-02e2044944cc // indirect
+	github.com/spf13/cobra v0.0.6
+	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.6.2
 	github.com/stretchr/testify v1.5.1
 	go.uber.org/zap v1.13.0

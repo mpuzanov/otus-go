@@ -23,7 +23,13 @@ lint:
 	@golangci-lint run
 
 run:
-	@go run ${SOURCE} --config=configs/config-dev.yml
+	@go run ${SOURCE} grpc_server --config=configs/config-dev.yml
+
+run-client:
+	@go run ${SOURCE} grpc_client --server=":50051"
+
+run-web:
+	@go run ${SOURCE} web_server --config=configs/config-dev.yml
 
 test:
 	@go test -v $(GO_TEST_DIRS)
