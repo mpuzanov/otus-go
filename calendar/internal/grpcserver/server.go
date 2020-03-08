@@ -6,6 +6,7 @@ import (
 
 	"github.com/mpuzanov/otus-go/calendar/internal/calendar"
 	"github.com/mpuzanov/otus-go/calendar/internal/config"
+	"github.com/mpuzanov/otus-go/calendar/pkg/calendar/api"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -26,7 +27,7 @@ func Start(conf *config.Config, logger *zap.Logger, evs *calendar.Calendar) erro
 
 	grpcServer := grpc.NewServer()
 
-	RegisterCalendarServer(grpcServer, s)
+	api.RegisterCalendarServer(grpcServer, s)
 
 	log.Printf("Starting gRPC server %s, file log: %s\n", s.cfg.GRPCAddr, s.cfg.Log.LogFile)
 	s.logger.Info("Starting gRPC server", zap.String("address", s.cfg.GRPCAddr))

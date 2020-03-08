@@ -35,7 +35,8 @@ test:
 	@go test -v $(GO_TEST_DIRS)
 
 gen:
-	protoc -I api/proto --go_out=plugins=grpc:internal/grpcserver api/proto/calendar.proto
+	protoc -I api/proto --go_out=plugins=grpc:pkg/calendar/api api/proto/calendar.proto
+	@#protoc -I api/proto --go_out=plugins=grpc:internal/grpcserver api/proto/calendar.proto
 
 mod:
 	go mod tidy

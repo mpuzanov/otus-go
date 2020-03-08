@@ -3,8 +3,8 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 
-package grpcserver;
-option go_package = "grpcserver";
+package api;
+option go_package = "api";
 
 message Event {
     string id = 1; 
@@ -16,7 +16,20 @@ message Event {
     google.protobuf.Duration reminder_before = 7;
 }
 
-message ResponseResult {
+
+message AddResponseResult {
+    bool status = 1;
+    string id = 2;
+    string error = 3;
+}
+
+message UpdateResponseResult {
+    bool status = 1;
+    string id = 2;
+    string error = 3;
+}
+
+message DelResponseResult {
     bool status = 1;
     string id = 2;
     string error = 3;
@@ -55,9 +68,9 @@ message PeriodRequest {
 }
 
 service Calendar {    
-    rpc AddEvent(Event) returns (ResponseResult) {}
-	rpc UpdateEvent(Event) returns (ResponseResult) {}
-	rpc DelEvent(EventID) returns (ResponseResult) {}
+    rpc AddEvent(Event) returns (AddResponseResult) {}
+	rpc UpdateEvent(Event) returns (UpdateResponseResult) {}
+	rpc DelEvent(EventID) returns (DelResponseResult) {}
     rpc FindEventByID(EventID) returns (EventResponse) {}
     rpc GetUserEvents(RequestUser) returns (EventsResponse) {}
 }

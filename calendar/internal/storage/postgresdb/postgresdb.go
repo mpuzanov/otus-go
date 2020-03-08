@@ -122,6 +122,9 @@ func (pg *EventStore) FindEventByID(id string) (*model.Event, error) {
 	evDB := &EventDB{}
 	p := map[string]interface{}{"ID": id}
 	nstmt, err := pg.db.PrepareNamedContext(pg.ctx, "SELECT * FROM events WHERE id= :ID")
+	if err != nil {
+		return nil, err
+	}
 	if err := nstmt.GetContext(pg.ctx, evDB, p); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.ErrRecordNotFound

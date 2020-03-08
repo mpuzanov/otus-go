@@ -6,10 +6,11 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/google/uuid"
 	"github.com/mpuzanov/otus-go/calendar/internal/model"
+	"github.com/mpuzanov/otus-go/calendar/pkg/calendar/api"
 )
 
 //EventProtoMsgToEvent переконвертируем событие protoMsg в структуру golang
-func EventProtoMsgToEvent(in *Event) (*model.Event, error) {
+func EventProtoMsgToEvent(in *api.Event) (*model.Event, error) {
 	ID := uuid.Nil
 	if in.GetId() != "" {
 		id, err := uuid.Parse(in.GetId())
@@ -45,7 +46,7 @@ func EventProtoMsgToEvent(in *Event) (*model.Event, error) {
 }
 
 //EventToEventProtoMsg переконвертируем событие в структуре golang в protoMsg
-func EventToEventProtoMsg(in *model.Event) (*Event, error) {
+func EventToEventProtoMsg(in *model.Event) (*api.Event, error) {
 
 	startTime, err := ptypes.TimestampProto(in.StartTime)
 	if err != nil {
@@ -56,7 +57,7 @@ func EventToEventProtoMsg(in *model.Event) (*Event, error) {
 		return nil, fmt.Errorf("convert EndTime, %w", err)
 	}
 
-	eventProto := Event{
+	eventProto := api.Event{
 		Id:             in.ID.String(),
 		Header:         in.Header,
 		Text:           in.Text,

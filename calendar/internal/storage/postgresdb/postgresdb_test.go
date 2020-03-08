@@ -51,7 +51,7 @@ func TestGetUserEvents(t *testing.T) {
 
 	got, err = pg.GetUserEvents("UserNotFound")
 	assert.NoError(t, err)
-	assert.NotNil(t, got)	
+	assert.NotNil(t, got)
 }
 
 func TestFindEventByID(t *testing.T) {
@@ -72,7 +72,7 @@ func TestFindEventByID(t *testing.T) {
 	assert.NotNil(t, got)
 
 	//такой записи нет
-	id=uuid.New().String()
+	id = uuid.New().String()
 	got, err = pg.FindEventByID(id)
 	assert.Error(t, err)
 	assert.Nil(t, got)
@@ -113,8 +113,8 @@ func TestDelEvent(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, got)
 	//такой записи нет
-	id=uuid.New().String()
+	id = uuid.New().String()
 	got, err = pg.DelEvent(id)
 	assert.Error(t, err)
-	assert.False(t, got)	
+	assert.False(t, got)
 }
