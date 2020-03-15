@@ -24,3 +24,12 @@ db:
     # Строка подключения к БД
     url: "postgres://postgres:12345@localhost:5432/pg_calendar_test?sslmode=disable"
    
+queue:
+    user: guest
+    password: guest
+    host: "192.168.56.103"
+    port: 5672
+    exchange: calendar
+    name: events
+
+      

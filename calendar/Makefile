@@ -31,6 +31,12 @@ run-client:
 run-web:
 	@go run ${SOURCE} web_server --config=configs/config-dev.yml
 
+run-mq:
+	@go run ${SOURCE} scheduler --config=configs/config-dev.yml
+
+run-sender:
+	@go run ${SOURCE} sender --config=configs/config-dev.yml
+
 test:
 	@go test -v $(GO_TEST_DIRS)
 

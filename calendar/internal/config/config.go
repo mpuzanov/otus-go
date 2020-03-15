@@ -9,10 +9,11 @@ import (
 
 //Config Структура файла с конфигурацией
 type Config struct {
-	Log      LogConf `yaml:"log" mapstructure:"log"`
-	DB       DBConf  `yaml:"db" mapstructure:"db"`
-	HTTPAddr string  `yaml:"http_listen" mapstructure:"http_listen"`
-	GRPCAddr string  `yaml:"grpc_listen" mapstructure:"grpc_listen"`
+	Log      LogConf   `yaml:"log" mapstructure:"log"`
+	DB       DBConf    `yaml:"db" mapstructure:"db"`
+	HTTPAddr string    `yaml:"http_listen" mapstructure:"http_listen"`
+	GRPCAddr string    `yaml:"grpc_listen" mapstructure:"grpc_listen"`
+	Queue    QueueConf `yaml:"queue" mapstructure:"queue"`
 }
 
 // LogConf стуктура для настройки логирования
@@ -26,6 +27,16 @@ type LogConf struct {
 type DBConf struct {
 	DbName      string `yaml:"db_name" mapstructure:"db_name"`
 	DatabaseURL string `yaml:"database_url" mapstructure:"url"`
+}
+
+// QueueConf .
+type QueueConf struct {
+	Host     string `yaml:"host" mapstructure:"host"`
+	Port     string `yaml:"port" mapstructure:"port"`
+	User     string `yaml:"user" mapstructure:"user"`
+	Password string `yaml:"password" mapstructure:"password"`
+	Exchange string `yaml:"exchange" mapstructure:"exchange"`
+	Name     string `yaml:"name" mapstructure:"name"`
 }
 
 // LoadConfig Загрузка конфигурации из файла
