@@ -5,13 +5,19 @@ import (
 	"os"
 	"time"
 
-	"github.com/mpuzanov/otus-go/calendar/internal/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 //Logger глобальная переменная для работы
 type Logger *zap.Logger
+
+// LogConf стуктура для настройки логирования
+type LogConf struct {
+	Level      string `yaml:"level" mapstructure:"level"`
+	File       string `yaml:"file" mapstructure:"file"`
+	FormatJSON bool   `yaml:"format_JSON" mapstructure:"format_JSON"`
+}
 
 func getZapLevel(level string) zap.AtomicLevel {
 	switch level {
@@ -35,26 +41,28 @@ func syslogTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 }
 
 //NewLogger Возвращаем инициализированный логер
-func NewLogger(config config.LogConf) *zap.Logger {
+func NewLogger(config LogConf) *zap.Logger {
 	EncodingFormat := "json"
-	if !config.LogFormatJSON {
+	if !config.FormatJSON {
 		EncodingFormat = "console"
 	}
-	OutputPath, ErrorOutputPath := "stderr", "stderr"
+	OutputPath := []string{"stdout"}
+	ErrorOutputPath := []string{"stderr"}
 
-	if config.LogFile != "" {
-		_, err := os.Create(config.LogFile)
+	if config.File != "" {
+		_, err := os.Create(config.File)
 		if err != nil {
-			log.Printf("ошибка создания файла логов %s %v", config.LogFile, err)
+			log.Printf("ошибка создания файла логов %s %v", config.File, err)
 		} else {
-			OutputPath, ErrorOutputPath = config.LogFile, config.LogFile
+			OutputPath = append(OutputPath, config.File)
+			ErrorOutputPath = append(ErrorOutputPath, config.File)
 		}
 	}
 	cfg := zap.Config{
 		Encoding:         EncodingFormat,
-		Level:            getZapLevel(config.LogLevel),
-		OutputPaths:      []string{OutputPath},
-		ErrorOutputPaths: []string{ErrorOutputPath},
+		Level:            getZapLevel(config.Level),
+		OutputPaths:      OutputPath,
+		ErrorOutputPaths: ErrorOutputPath,
 		EncoderConfig: zapcore.EncoderConfig{
 			MessageKey: "message",
 
@@ -74,25 +82,25 @@ func NewLogger(config config.LogConf) *zap.Logger {
 }
 
 //InitLogger Вариант инициализации логера
-func InitLogger(config config.LogConf) *zap.Logger {
+func InitLogger(config LogConf) *zap.Logger {
 	cfg := zap.NewProductionEncoderConfig()
 	cfg.EncodeTime = syslogTimeEncoder //zapcore.ISO8601TimeEncoder
 	cfg.CallerKey = "caller"
 	cfg.EncodeCaller = zapcore.ShortCallerEncoder
 	encoder := zapcore.NewJSONEncoder(cfg)
-	if !config.LogFormatJSON {
+	if !config.FormatJSON {
 		encoder = zapcore.NewConsoleEncoder(cfg)
 	}
 	writerSyncer := zapcore.Lock(os.Stderr) //os.Stdout
-	if config.LogFile != "" {
-		file, err := os.Create(config.LogFile)
+	if config.File != "" {
+		file, err := os.Create(config.File)
 		if err != nil {
-			log.Printf("ошибка создания файла логов %s %v", config.LogFile, err)
+			log.Printf("ошибка создания файла логов %s %v", config.File, err)
 		} else {
-			writerSyncer = zapcore.Lock(file)
+			writerSyncer = zapcore.NewMultiWriteSyncer(zapcore.Lock(file))
 		}
 	}
-	level := getZapLevel(config.LogLevel)
+	level := getZapLevel(config.Level)
 	logger := zap.New(zapcore.NewCore(encoder, writerSyncer, level))
 
 	//zap.ReplaceGlobals(logger)
