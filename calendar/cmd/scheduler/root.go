@@ -37,13 +37,7 @@ func schedulerServerStart(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatalf("Не удалось загрузить %s: %s", cfgPath, err)
 	}
-	// logger := logger.NewLogger(
-	// 	logger.LogConf{
-	// 		Level:      cfg.Log.Level,
-	// 		File:       cfg.Log.File,
-	// 		FormatJSON: cfg.Log.FormatJSON,
-	// 	},
-	// )
+
 	logger := logger.NewLogger(cfg.Log)
 
 	db, err := storage.NewStorageRemind(cfg)
@@ -67,6 +61,8 @@ func schedulerServerStart(cmd *cobra.Command, args []string) {
 		}
 
 		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
+
 		for {
 
 			// выбираем сообытия для отправки
@@ -76,11 +72,14 @@ func schedulerServerStart(cmd *cobra.Command, args []string) {
 				break
 			}
 			logger.Info("selected to send", zap.Int("count", len(events)))
+
 			for _, event := range events {
+
 				body, err := json.Marshal(event)
 				if err != nil {
 					logger.Error("Marshal event", zap.Error(err))
 				}
+
 				err = mq.Publish(body)
 				if err != nil {
 					logger.Error("Failed to publish a message", zap.Error(err))
@@ -94,7 +93,7 @@ func schedulerServerStart(cmd *cobra.Command, args []string) {
 			}
 			<-ticker.C
 		}
-		ticker.Stop()
+
 	}()
 
 	<-stopChan

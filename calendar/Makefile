@@ -15,7 +15,7 @@ GO_TEST_DIRS := $(shell \
 	xargs -I {} dirname {}  | \
 	uniq)	
 
-build: 
+build: lint
 	@go build -v -o ${APP} ${SOURCE}
 	@go build -v -o scheduler ./cmd/scheduler
 	@go build -v -o sender ./cmd/sender

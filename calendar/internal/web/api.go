@@ -27,7 +27,10 @@ func (s *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *myHandler) homePage(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "<html><body><h1>Сервис \"Календарь\"</h1></body></html>")
+	_, err := io.WriteString(w, "<html><body><h1>Сервис \"Календарь\"</h1></body></html>")
+	if err != nil {
+		s.logger.Error("WriteString homePage", zap.Error(err))
+	}
 }
 
 func (s *myHandler) helloPage(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +41,10 @@ func (s *myHandler) helloPage(w http.ResponseWriter, r *http.Request) {
 	}
 	s.logger.Debug("helloPage",
 		zap.String("name", name))
-	io.WriteString(w, "<html><body><h1>Добро пожаловать "+name+"!</h1></body></html>")
+	_, err := io.WriteString(w, "<html><body><h1>Добро пожаловать "+name+"!</h1></body></html>")
+	if err != nil {
+		s.logger.Error("WriteString helloPage", zap.Error(err))
+	}
 }
 
 func (s *myHandler) logRequest(next http.Handler) http.Handler {

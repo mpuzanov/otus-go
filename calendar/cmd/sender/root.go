@@ -59,7 +59,7 @@ func senderServerStart(cmd *cobra.Command, args []string) {
 				var countMsg int
 				for d := range msgs {
 					//logger.Debug("Send Event", zap.ByteString("Body", d.Body), zap.Int("countMsg", countMsg))
-					log.Printf("Send Event: %s", d.Body)
+					log.Printf("Send Event: %s, CountMsg: %d", d.Body, countMsg)
 					countMsg++
 				}
 			}()

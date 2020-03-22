@@ -97,15 +97,13 @@ func (c *MQ) ReConnect() error {
 			return fmt.Errorf("stop reconnecting")
 		}
 
-		select {
-		case <-time.After(d):
-			if err := c.Connect(); err != nil {
-				c.logger.Error("could not connect in reconnect call", zap.Error(err))
-				continue
-			}
-			c.logger.Info("Reconnected... possibly")
-			return nil
+		<-time.After(d)
+		if err := c.Connect(); err != nil {
+			c.logger.Error("could not connect in reconnect call", zap.Error(err))
+			continue
 		}
+		c.logger.Info("Reconnected... possibly")
+		return nil
 	}
 }
 
