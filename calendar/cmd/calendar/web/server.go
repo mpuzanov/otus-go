@@ -33,13 +33,14 @@ func webServerStart(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatalf("Не удалось загрузить %s: %s", cfgPath, err)
 	}
+
 	logger := logger.NewLogger(cfg.Log)
-	// Init db
+
 	db, err := storage.NewStorageDB(cfg)
 	if err != nil {
 		log.Fatalf("newStorageDB failed: %s", err)
 	}
-	calendar := calendar.NewCalendar(*db)
+	calendar := calendar.NewCalendar(db)
 
 	if err := web.Start(cfg, logger, calendar); err != nil {
 		log.Fatal(err)

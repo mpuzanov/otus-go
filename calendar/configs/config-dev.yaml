@@ -3,11 +3,11 @@
 # Настройки логирования
 log: 
     # уровень логирования (error / warn / info / debug)
-    loglevel: error
+    #level: debug
     # путь к файлу логов
-    logfile: "file_prod.log"
+    file: 
     # формат логирования
-    logformat_JSON: true
+    format_JSON: true
 
 # Настройки веб-сервера
 # ip и port на котором должен слушать web-сервер
@@ -22,4 +22,17 @@ db:
     # виды storage (MemorySlice / MemoryMap / Postgres)
     db_name: "Postgres"
     # Строка подключения к БД
-    url: "postgres://postgres:dnypr1@localhost:5432/pg_calendar?sslmode=disable"
+    url: "postgres://postgres:12345@localhost:5432/pg_calendar_test?sslmode=disable"
+   
+queue:
+    user: guest
+    password: guest
+    #host: "0.0.0.0"
+    host: "192.168.56.103"    
+    port: 5672    
+    exchange_name: calendar
+    exchange_type: fanout
+    qname: events    
+    binding_key: 
+    consumer_tag: 
+      

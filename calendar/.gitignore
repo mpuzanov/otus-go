@@ -18,7 +18,11 @@
 *.code-workspace
 go.sum
 
+/bin
 /calendar
+/scheduler
+/sender
+
 *.log
 
 

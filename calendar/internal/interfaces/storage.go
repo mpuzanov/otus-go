@@ -12,3 +12,8 @@ type EventStorage interface {
 	FindEventByID(id string) (*model.Event, error)
 	GetUserEvents(user string) ([]model.Event, error)
 }
+
+//UseCaseReminder интерфейс для работы scheduler
+type UseCaseReminder interface {
+	GetUserEvents(user string) ([]model.Event, error)
+}
