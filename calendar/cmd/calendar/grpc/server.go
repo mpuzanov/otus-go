@@ -33,12 +33,12 @@ func grpcServerStart(cmd *cobra.Command, args []string) {
 		log.Fatalf("unable to load %s: %s", cfgPath, err)
 	}
 	logger := logger.NewLogger(cfg.Log)
-	// Init db
+	
 	db, err := storage.NewStorageDB(cfg)
 	if err != nil {
 		log.Fatalf("newStorageDB failed: %s", err)
 	}
-	calendar := calendar.NewCalendar(*db)
+	calendar := calendar.NewCalendar(db)
 
 	if err := grpcserver.Start(cfg, logger, calendar); err != nil {
 		log.Fatal(err)

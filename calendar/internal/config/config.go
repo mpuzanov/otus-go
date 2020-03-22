@@ -4,23 +4,17 @@ import (
 	"log"
 	"strings"
 
+	"github.com/mpuzanov/otus-go/calendar/pkg/logger"
 	"github.com/spf13/viper"
 )
 
 //Config Структура файла с конфигурацией
 type Config struct {
-	Log      LogConf   `yaml:"log" mapstructure:"log"`
-	DB       DBConf    `yaml:"db" mapstructure:"db"`
-	HTTPAddr string    `yaml:"http_listen" mapstructure:"http_listen"`
-	GRPCAddr string    `yaml:"grpc_listen" mapstructure:"grpc_listen"`
-	Queue    QueueConf `yaml:"queue" mapstructure:"queue"`
-}
-
-// LogConf стуктура для настройки логирования
-type LogConf struct {
-	LogLevel      string `yaml:"loglevel" mapstructure:"loglevel"`
-	LogFile       string `yaml:"logfile" mapstructure:"logfile"`
-	LogFormatJSON bool   `yaml:"logformat_JSON" mapstructure:"logformat_JSON"`
+	Log      logger.LogConf `yaml:"log" mapstructure:"log"`
+	DB       DBConf         `yaml:"db" mapstructure:"db"`
+	HTTPAddr string         `yaml:"http_listen" mapstructure:"http_listen"`
+	GRPCAddr string         `yaml:"grpc_listen" mapstructure:"grpc_listen"`
+	Queue    QueueConf      `yaml:"queue" mapstructure:"queue"`
 }
 
 // DBConf стуктура для настройки работы с базой данных
@@ -31,12 +25,15 @@ type DBConf struct {
 
 // QueueConf .
 type QueueConf struct {
-	Host     string `yaml:"host" mapstructure:"host"`
-	Port     string `yaml:"port" mapstructure:"port"`
-	User     string `yaml:"user" mapstructure:"user"`
-	Password string `yaml:"password" mapstructure:"password"`
-	Exchange string `yaml:"exchange" mapstructure:"exchange"`
-	Name     string `yaml:"name" mapstructure:"name"`
+	Host         string `yaml:"host" mapstructure:"host"`
+	Port         string `yaml:"port" mapstructure:"port"`
+	User         string `yaml:"user" mapstructure:"user"`
+	Password     string `yaml:"password" mapstructure:"password"`
+	ExchangeName string `yaml:"exchange_name" mapstructure:"exchange_name"`
+	ExchangeType string `yaml:"exchange_type" mapstructure:"exchange_type"`
+	QName        string `yaml:"qname" mapstructure:"qname"`
+	BindingKey   string `yaml:"binding_key" mapstructure:"binding_key"`
+	ConsumerTag  string `yaml:"consumer_tag" mapstructure:"consumer_tag"`
 }
 
 // LoadConfig Загрузка конфигурации из файла
@@ -44,7 +41,7 @@ func LoadConfig(filePath string) (*Config, error) {
 
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	viper.SetDefault("log.loglevel", "info")
+	viper.SetDefault("log.level", "info")
 	viper.SetDefault("http_listen", "0.0.0.0:8090")
 	viper.SetDefault("grpc_listen", "0.0.0.0:50051")
 	viper.SetDefault("db.url", "postgres://postgres:12345@localhost:5432/pg_calendar_test?sslmode=disable")
@@ -67,6 +64,6 @@ func LoadConfig(filePath string) (*Config, error) {
 	if err := viper.Unmarshal(&config); err != nil {
 		return nil, err
 	}
-	//log.Println(config)
+	log.Println(config)
 	return &config, nil
 }

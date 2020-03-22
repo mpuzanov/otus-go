@@ -26,7 +26,7 @@ func Start(conf *config.Config, logger *zap.Logger, evs *calendar.Calendar) erro
 			log.Fatalf("listen: %s\n", err)
 		}
 	}()
-	log.Printf("Server http started: %s, file log: %s\n", srv.Addr, conf.Log.LogFile)
+	log.Printf("Server http started: %s, file log: %s\n", srv.Addr, conf.Log.File)
 	logger.Info("Starting Http server", zap.String("address", srv.Addr))
 
 	done := make(chan os.Signal, 1)

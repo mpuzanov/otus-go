@@ -29,7 +29,7 @@ func Start(conf *config.Config, logger *zap.Logger, evs *calendar.Calendar) erro
 
 	api.RegisterCalendarServer(grpcServer, s)
 
-	log.Printf("Starting gRPC server %s, file log: %s\n", s.cfg.GRPCAddr, s.cfg.Log.LogFile)
+	log.Printf("Starting gRPC server %s, file log: %s\n", s.cfg.GRPCAddr, s.cfg.Log.File)
 	s.logger.Info("Starting gRPC server", zap.String("address", s.cfg.GRPCAddr))
 
 	if err := grpcServer.Serve(l); err != nil {
