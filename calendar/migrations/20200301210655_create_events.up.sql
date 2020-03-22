@@ -1,6 +1,6 @@
 BEGIN;
 
-CREATE TABLE events
+CREATE TABLE if not exists events
 (
 	"id" uuid NOT NULL DEFAULT uuid_generate_v4(),
 	"header" character varying(100) NOT NULL,
