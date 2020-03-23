@@ -64,6 +64,6 @@ func LoadConfig(filePath string) (*Config, error) {
 	if err := viper.Unmarshal(&config); err != nil {
 		return nil, err
 	}
-	log.Println(config)
+	//log.Println(config)
 	return &config, nil
 }
