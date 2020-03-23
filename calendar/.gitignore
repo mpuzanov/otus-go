@@ -20,8 +20,9 @@ go.sum
 
 /bin
 /calendar
-/scheduler
-/sender
+/calendar_api
+/calendar_scheduler
+/calendar_sender
 
 *.log
 

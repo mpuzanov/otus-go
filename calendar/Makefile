@@ -15,10 +15,10 @@ GO_TEST_DIRS := $(shell \
 	xargs -I {} dirname {}  | \
 	uniq)	
 
-build: lint
-	@go build -v -o ${APP} ${SOURCE}
-	@go build -v -o scheduler ./cmd/scheduler
-	@go build -v -o sender ./cmd/sender
+build: 
+	@go build -v -o calendar_api ${SOURCE}
+	@go build -v -o calendar_scheduler ./cmd/scheduler
+	@go build -v -o calendar_sender ./cmd/sender
 
 lint:
 	@goimports -w ${GO_SRC_DIRS}	
