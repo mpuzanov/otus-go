@@ -8,7 +8,7 @@ CREATE TABLE if not exists events
 	"start_time" timestamp without time zone NOT NULL,
 	"end_time" timestamp without time zone NOT NULL,
 	"user_id" character varying(30) NOT NULL,
-	"reminder_before" interval(16),
+	"reminder_before" interval(6),
 	CONSTRAINT events_pkey PRIMARY KEY ("id")
 );
 

@@ -10,18 +10,20 @@ func (ee EventError) Error() string {
 }
 
 var (
-	//ErrNotEvent ошибка "событие не найдено"
+	// ErrNotEvent ошибка "событие не найдено"
 	ErrNotEvent = EventError("Событие не найдено")
-	//ErrAddEvent "ошибка добавления события"
+	// ErrAddEvent "ошибка добавления события"
 	ErrAddEvent = EventError("Ошибка добавления события")
-	//ErrDelEvent "ошибка удаления события"
+	// ErrDelEvent "ошибка удаления события"
 	ErrDelEvent = EventError("Ошибка удаления события")
-	//ErrEditEvent "ошибка изменения события"
+	// ErrEditEvent "ошибка изменения события"
 	ErrEditEvent = EventError("Ошибка изменения события")
-	//ErrNoDBAffected ошибка "Действие не затронуло ни одной строки"
+	// ErrNoDBAffected ошибка "Действие не затронуло ни одной строки"
 	ErrNoDBAffected = EventError("Действие не затронуло ни одной строки")
-	//ErrRecordNotFound ошибка "Запись не найдена"
-	ErrRecordNotFound = errors.New("Запись не найдена")
+	// ErrRecordNotFound ошибка "Запись не найдена"
+	ErrRecordNotFound = EventError("Запись не найдена")
+	// ErrBadLoginDBConfiguration .
+	ErrBadLoginDBConfiguration = EventError("Ошибка аутентификации при подключении к БД")
 )
 
 //Is обёртка над errors.Is

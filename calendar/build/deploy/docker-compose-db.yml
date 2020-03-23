@@ -1,0 +1,56 @@
+version: '3.7'
+# Запуск postgres (с тестовыми данными) и rabbitmq для тестирования
+
+services:
+
+  db:
+    container_name: db
+    image: postgres:12.0-alpine         
+    env_file:
+      - ./.env      
+    ports:
+      - "5432:5432"
+    restart: on-failure      
+    networks:
+      - net
+
+  migrate:
+    container_name: container-migrate
+    image: migrate/migrate   
+    env_file:
+      - ./.env      
+    restart: on-failure  
+    depends_on:
+      - db    
+    volumes:
+      - ../../migrations:/migrations
+    command: -path /migrations -database postgres://postgres:12345@db:5432/pg_calendar?sslmode=disable up 
+    networks:
+      - net
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.8-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    expose:
+      - 5672
+      - 15672
+    environment:
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: guest
+    restart: on-failure      
+    networks:
+      - net
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5        
+
+networks:
+  net:
+    name: net
+    driver: bridge  
+

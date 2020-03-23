@@ -1,34 +1,35 @@
-# Пример файла конфигурации для сервиса Календарь
+# Пример файла конфигурации для сервиса Scheduler
 
 # Настройки логирования
 log: 
     # уровень логирования (error / warn / info / debug)
-    level: error
+    level: info
     # путь к файлу логов
     file: 
     # формат логирования
     format_JSON: true
 
-# Настройки веб-сервера
-# ip и port на котором должен слушать web-сервер
-http_listen: "0.0.0.0:8090"
-
-# Настройки grpc-сервера    
-# ip и port на котором должен слушать gRPC-сервер
-grpc_listen: "0.0.0.0:50051"
-
 # Настройки СУБД
 db:     
     # виды storage (MemorySlice / MemoryMap / Postgres)
-    db_name: "Postgres"
+    name: "Postgres"
+    host: localhost
+    port: 5432
+    user: postgres
+    password: 12345
+    database: pg_calendar
+    ssl: disable
+
     # Строка подключения к БД
-    url: "postgres://postgres:12345@localhost:5432/pg_calendar?sslmode=disable"
+    #url: "postgres://postgres:12345@0.0.0.0:5432/pg_calendar?sslmode=disable"
+    #url: "postgres://postgres:12345@192.168.0.109:5432/pg_calendar?sslmode=disable"
+    #url: "postgres://postgres:12345@192.168.56.1:5432/pg_calendar?sslmode=disable"
 
 queue:
     user: guest
     password: guest
-    host: "192.168.56.103"
-    #host: "0.0.0.0"
+    #host: "192.168.56.103"
+    host: "0.0.0.0"
     port: 5672    
     exchange_name: calendar
     exchange_type: fanout

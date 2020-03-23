@@ -16,9 +16,10 @@ GO_TEST_DIRS := $(shell \
 	uniq)	
 
 build: 
-	@go build -v -o calendar_api ${SOURCE}
-	@go build -v -o calendar_scheduler ./cmd/scheduler
-	@go build -v -o calendar_sender ./cmd/sender
+	@echo "Компилилируем сервисы"
+	@CGO_ENABLED=0 go build -v -o calendar_api ${SOURCE}
+	@CGO_ENABLED=0 go build -v -o calendar_scheduler ./cmd/scheduler
+	@CGO_ENABLED=0 go build -ldflags="-s -w" -v -o calendar_sender ./cmd/sender
 
 lint:
 	@goimports -w ${GO_SRC_DIRS}	
@@ -26,22 +27,19 @@ lint:
 	@golangci-lint run
 
 run:
-	@go run ${SOURCE} grpc_server --config=configs/config-prod.yaml
+	@go run ${SOURCE} grpc_server --config=configs/prod/config.yaml
 
 run-client:
-	@go run ${SOURCE} grpc_client --server=":50051"
+	@go run ${SOURCE} grpc_client --server="0.0.0.0:50051"
 
 run-web:
-	@go run ${SOURCE} web_server --config=configs/config-prod.yaml
+	@go run ${SOURCE} web_server --config=configs/prod/config.yaml
 
 run-mq:
-	@go run ./cmd/scheduler --config=configs/config-dev.yaml
+	@go run ./cmd/scheduler --config=configs/prod/config-scheduler.yaml
 
 run-sender:
-	@go run ./cmd/sender --config=configs/config-dev.yaml
-
-test:
-	@go test -v $(GO_TEST_DIRS)
+	@go run ./cmd/sender --config=configs/prod/config-sender.yaml
 
 gen:
 	protoc -I api/proto --go_out=plugins=grpc:pkg/calendar/api api/proto/calendar.proto
@@ -50,21 +48,45 @@ mod:
 	go mod verify
 	go mod tidy
 
-.PHONY: dockerbuild
-dockerbuild: 
-	docker build -t puzanovma/calendar -f ./deployments/calendar/Dockerfile .
+.PHONY: docker-build
+docker-build: 
+	docker build -t puzanovma/calendar -f ./build/docker/calendar/api_build.Dockerfile .
 
-.PHONY: docker-compose-up
-docker-compose-up: 
-	docker-compose -f ./deployments/docker-compose.yaml up --build
+up: 
+	./build/docker-up.sh
 
-.PHONY: docker-compose-down
-docker-compose-down: 
-	docker-compose -f ./deployments/docker-compose.yaml down -v
+down:
+	./build/docker-down.sh
+
+.PHONY: db-up
+# Запуск postgres (с тестовыми данными) и rabbitmq для тестирования
+db-up: 
+	docker-compose -f build/deploy/docker-compose-db.yml up --build --detach
+.PHONY: db-down
+db-down:
+	docker-compose  --file build/deploy/docker-compose-db.yml down
+
+.PHONY: cal-test
+calendar-test:
+	@go test -v -count=1 $(GO_TEST_DIRS)
+
+# Поднимаем БД, тестируем, убираем БД
+test-unit: db-up calendar-test db-down
+
+.PHONY: test
+# Запуск Integration tests
+test:
+	set -e ;\
+	docker-compose -f build/deploy/docker-compose.test.yml up --build -d ;\
+	test_status_code=0 ;\
+	docker-compose -f build/deploy/docker-compose.test.yml run integration_tests go test ./tests/integration || test_status_code=$$? ;\
+	docker-compose -f build/deploy/docker-compose.test.yml down --volumes;\
+	printf "Return code is $$test_status_code\n" ;\
+	exit $$test_status_code ;\
 
 release:
 	rm -rf ${RELEASE_DIR}${APP}*
 	GOOS=windows GOARCH=amd64 go build -ldflags="-H windowsgui" -o ${RELEASE_DIR}/${APP}.exe ${SOURCE}
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o ${RELEASE_DIR}/${APP} ${SOURCE}
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o ${RELEASE_DIR}/${APP} ${SOURCE}
 
-.PHONY: build run release lint test gen mod
+.PHONY: build run release lint test gen mod up down

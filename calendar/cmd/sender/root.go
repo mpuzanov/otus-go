@@ -38,6 +38,7 @@ func senderServerStart(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer mq.Close()
 
 	forever := make(chan bool)
 
@@ -45,12 +46,12 @@ func senderServerStart(cmd *cobra.Command, args []string) {
 
 		err := mq.Connect()
 		if err != nil {
-			logger.Error("Connect MQ", zap.Error(err))
+			log.Fatalf("Failed connect MQ: %s", err)
 		}
 
 		msgs, err := mq.AnnounceQueue()
 		if err != nil {
-			logger.Error("Announce Queue", zap.Error(err))
+			log.Fatalf("Announce Queue: %s", err)
 		}
 
 		for {
@@ -82,6 +83,5 @@ func senderServerStart(cmd *cobra.Command, args []string) {
 
 	log.Printf("Waiting for logs. To exit press CTRL+C")
 	<-forever
-	mq.Close()
 
 }

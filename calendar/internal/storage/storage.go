@@ -2,8 +2,10 @@ package storage
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/mpuzanov/otus-go/calendar/internal/config"
+	"github.com/mpuzanov/otus-go/calendar/internal/errors"
 	"github.com/mpuzanov/otus-go/calendar/internal/interfaces"
 	"github.com/mpuzanov/otus-go/calendar/internal/storage/memory"
 	"github.com/mpuzanov/otus-go/calendar/internal/storage/memslice"
@@ -11,11 +13,11 @@ import (
 )
 
 //NewStorageDB create storage for calendar
-func NewStorageDB(cfg *config.Config) (interfaces.EventStorage, error) {
+func NewStorageDB(cfg config.DBConf) (interfaces.EventStorage, error) {
 	var err error
 	var db interfaces.EventStorage
 
-	switch cfg.DB.DbName {
+	switch cfg.Name {
 	case "MemorySlice": // MemorySlice хранение событий в slice
 		db = memslice.NewEventStore()
 	case "MemoryMap": // MemoryMap хранение событий в map
@@ -23,20 +25,28 @@ func NewStorageDB(cfg *config.Config) (interfaces.EventStorage, error) {
 
 	case "Postgres": //Postgres работа с БД
 		ctx := context.Background()
-		db, err = postgresdb.NewPgEventStore(ctx, cfg.DB.DatabaseURL)
+
+		if cfg.Name == "" || cfg.User == "" || cfg.Host == "" || cfg.Password == "" || cfg.Database == "" {
+			return nil, errors.ErrBadLoginDBConfiguration
+		}
+
+		DatabaseURL := fmt.Sprintf("Postgres://%s:%s@%s:%s/%s?sslmode=%s", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Database, cfg.SSL)
+
+		db, err = postgresdb.NewPgEventStore(ctx, DatabaseURL)
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println("Connecting to the database successfully")
 	}
 	return db, err
 }
 
 //NewStorageRemind create storage for calendar
-func NewStorageRemind(cfg *config.Config) (interfaces.UseCaseReminder, error) {
+func NewStorageRemind(cfg config.DBConf) (interfaces.UseCaseReminder, error) {
 	var err error
 	var db interfaces.UseCaseReminder
 
-	switch cfg.DB.DbName {
+	switch cfg.Name {
 	case "MemorySlice": // MemorySlice хранение событий в slice
 		db = memslice.NewEventStore()
 	case "MemoryMap": // MemoryMap хранение событий в map
@@ -44,10 +54,17 @@ func NewStorageRemind(cfg *config.Config) (interfaces.UseCaseReminder, error) {
 
 	case "Postgres": //Postgres работа с БД
 		ctx := context.Background()
-		db, err = postgresdb.NewPgEventStore(ctx, cfg.DB.DatabaseURL)
+
+		if cfg.Name == "" || cfg.User == "" || cfg.Host == "" || cfg.Password == "" || cfg.Database == "" {
+			return nil, errors.ErrBadLoginDBConfiguration
+		}
+
+		DatabaseURL := fmt.Sprintf("Postgres://%s:%s@%s:%s/%s?sslmode=%s", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Database, cfg.SSL)
+		db, err = postgresdb.NewPgEventStore(ctx, DatabaseURL)
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println("Connecting to the database successfully")
 	}
 	return db, err
 }

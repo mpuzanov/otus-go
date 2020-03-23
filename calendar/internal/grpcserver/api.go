@@ -28,7 +28,7 @@ func (s *GRPCServer) AddEvent(ctx context.Context, req *api.Event) (*api.AddResp
 		s.logger.Error("GRPCServer AddEvent", zap.String("eventService.AddEvent", err.Error()))
 		return &api.AddResponseResult{Status: false, Id: "", Error: err.Error()}, err
 	}
-	s.logger.Info("GRPCServer AddEvent", zap.Bool("status", true), zap.String("Id", req.GetId()))
+	s.logger.Info("GRPCServer AddEvent", zap.Bool("status", true), zap.String("Id", event.ID.String()))
 	return &api.AddResponseResult{Status: true, Id: id, Error: ""}, nil
 
 }

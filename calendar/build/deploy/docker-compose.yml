@@ -1,0 +1,204 @@
+version: '3.7'
+
+services:
+
+  calendar_db:
+    container_name: calendar_db
+    image: postgres:12.0-alpine         
+    env_file:
+      - ./.env      
+    ports:
+      - "5432:5432"
+    restart: on-failure      
+    networks:
+      - net
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5432" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  migrate:
+    container_name: container-migrate
+    image: migrate/migrate   
+    env_file:
+      - ./.env      
+    restart: on-failure  
+    depends_on:
+      - calendar_db    
+    volumes:
+      - ../../migrations:/migrations
+    command: -path /migrations -database postgres://postgres:12345@calendar_db:5432/pg_calendar?sslmode=disable up 
+    networks:
+      - net
+
+  calendar_rabbitmq:
+    container_name: calendar_rabbitmq
+    image: rabbitmq:3.8-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    expose:
+      - 5672
+      - 15672
+    environment:
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: guest
+    restart: on-failure      
+    networks:
+      - net       
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5        
+
+  calendar_sender:
+    image: calendar_sender
+    container_name: calendar_sender
+    build:
+      context: ../..
+      dockerfile: ./build/docker/sender/sender.Dockerfile
+      #dockerfile: ./build/docker/sender/sender_build.Dockerfile
+    env_file:
+      - ./.env      
+    environment:
+      QUEUE_HOST: calendar_rabbitmq
+    depends_on:
+      - calendar_rabbitmq
+    networks:
+      - net      
+    restart: on-failure
+
+  calendar_api:
+    image: calendar_api
+    container_name: calendar_api
+    build:
+      context: ../..
+      dockerfile: ./build/docker/calendar/api.Dockerfile
+      #dockerfile: ./build/docker/calendar/api_build.Dockerfile
+    env_file:
+      - ./.env         
+    environment:
+      DB_HOST: calendar_db
+    ports:
+      - "50051:50051"
+      - "9091:9091"
+    depends_on:
+      - calendar_db
+    networks:
+      - net  
+    restart: on-failure
+
+  calendar_scheduler:
+    image: calendar_scheduler
+    container_name: calendar_scheduler
+    build:
+      context: ../..
+      dockerfile: ./build/docker/scheduler/scheduler.Dockerfile
+      #dockerfile: ./build/docker/scheduler/scheduler_build.Dockerfile
+    env_file:
+      - ./.env           
+    environment:
+      DB_HOST: calendar_db
+      QUEUE_HOST: calendar_rabbitmq
+    ports: 
+      - "9092:9092"
+    depends_on:
+      - calendar_db
+      - calendar_rabbitmq
+    networks:
+      - net 
+    restart: on-failure
+
+  calendar_web:
+    image: calendar_web
+    container_name: calendar_web
+    build:
+      context: ../..
+      dockerfile: ./build/docker/web/web.Dockerfile
+      #dockerfile: ./build/docker/web/web_build.Dockerfile
+    env_file:
+      - ./.env        
+    environment:
+      - DB_HOST=calendar_db
+    ports:
+      - "8888:8888"
+    depends_on:
+      - calendar_db
+    networks:
+      - net    
+    restart: on-failure
+
+  postgresql-exporter:
+    container_name: postgresql-exporter
+    image: wrouesnel/postgres_exporter
+    volumes:
+      - ../../configs/monitoring/queries.yml:/config/queries.yml
+    ports:
+      - 9187:9187   
+    environment:
+      DATA_SOURCE_NAME: postgres://postgres:12345@calendar_db:5432/pg_calendar?sslmode=disable
+      PG_EXPORTER_DISABLE_DEFAULT_METRICS: "true"
+      PG_EXPORTER_DISABLE_SETTINGS_METRICS: "true"
+      PG_EXPORTER_EXTEND_QUERY_PATH: "/config/queries.yml"
+    depends_on:
+      - calendar_db
+      - migrate  
+    networks:
+      - net
+    restart: on-failure 
+
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest 
+    volumes:
+      - ../../configs/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention=200h'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    expose:
+      - 9090
+    depends_on:
+      - calendar_db
+      - calendar_scheduler
+      - postgresql-exporter  
+    networks:
+      - net
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    restart: unless-stopped
+    expose:
+      - 3000
+    ports:
+      - 3000:3000
+    networks:
+      - net
+
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
+      
+networks:
+  net:
+    name: net
+    driver: bridge  

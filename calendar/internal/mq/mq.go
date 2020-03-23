@@ -78,7 +78,7 @@ func (c *MQ) Connect() error {
 		return fmt.Errorf("Queue Declare: %s", err)
 	}
 
-	c.logger.Info("Success connected to MQ")
+	c.logger.Info("Success connected to MQ ", zap.String("Host", c.conf.Queue.Host), zap.String("Port", c.conf.Queue.Port))
 	return nil
 }
 
