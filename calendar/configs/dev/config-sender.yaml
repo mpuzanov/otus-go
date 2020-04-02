@@ -1,0 +1,23 @@
+# Пример файла конфигурации для сервиса Sender
+
+# Настройки логирования
+log: 
+    # уровень логирования (error / warn / info / debug)
+    level: debug
+    # путь к файлу логов
+    file: 
+    # формат логирования
+    format_JSON: true
+
+# Настройка доступа к RabbitMQ  
+queue:
+    user: guest
+    password: guest
+    host: "127.0.0.1"
+    port: "5672"    
+    exchange_name: calendar
+    exchange_type: fanout
+    qname: events    
+    binding_key: 
+    consumer_tag: 
+      

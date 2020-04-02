@@ -16,9 +16,9 @@ GO_TEST_DIRS := $(shell \
 	uniq)	
 
 build: 
-	@go build -v -o calendar_api ${SOURCE}
-	@go build -v -o calendar_scheduler ./cmd/scheduler
-	@go build -v -o calendar_sender ./cmd/sender
+	@CGO_ENABLED=0 go build -v -o calendar_api ${SOURCE}
+	@CGO_ENABLED=0 go build -v -o calendar_scheduler ./cmd/scheduler
+	@CGO_ENABLED=0 go build -ldflags="-s -w" -v -o calendar_sender ./cmd/sender
 
 lint:
 	@goimports -w ${GO_SRC_DIRS}	
@@ -26,19 +26,19 @@ lint:
 	@golangci-lint run
 
 run:
-	@go run ${SOURCE} grpc_server --config=configs/config-prod.yaml
+	@go run ${SOURCE} grpc_server --config=configs/prod/config.yaml
 
 run-client:
-	@go run ${SOURCE} grpc_client --server=":50051"
+	@go run ${SOURCE} grpc_client --server="0.0.0.0:50051"
 
 run-web:
-	@go run ${SOURCE} web_server --config=configs/config-prod.yaml
+	@go run ${SOURCE} web_server --config=configs/prod/config.yaml
 
 run-mq:
-	@go run ./cmd/scheduler --config=configs/config-dev.yaml
+	@go run ./cmd/scheduler --config=configs/prod/config-scheduler.yaml
 
 run-sender:
-	@go run ./cmd/sender --config=configs/config-dev.yaml
+	@go run ./cmd/sender --config=configs/prod/config-sender.yaml
 
 test:
 	@go test -v $(GO_TEST_DIRS)
@@ -50,21 +50,30 @@ mod:
 	go mod verify
 	go mod tidy
 
-.PHONY: dockerbuild
-dockerbuild: 
-	docker build -t puzanovma/calendar -f ./deployments/calendar/Dockerfile .
+.PHONY: docker-build
+docker-build: 
+	docker build -t puzanovma/calendar -f ./build/calendar/api_build.Dockerfile .
 
-.PHONY: docker-compose-up
-docker-compose-up: 
-	docker-compose -f ./deployments/docker-compose.yaml up --build
+.PHONY: up
+up:
+	./build/docker-up.sh
 
-.PHONY: docker-compose-down
-docker-compose-down: 
-	docker-compose -f ./deployments/docker-compose.yaml down -v
+.PHONY: down
+down:
+	./build/docker-down.sh
+
+.PHONY: serv-up
+# Запуск postgres (с тестовыми данными) и rabbitmq для тестирования
+serv-up:
+	docker-compose -f build/docker-compose-serv.yml up --build --detach
+
+.PHONY: serv-up
+serv-down:
+	docker-compose  --file build/docker-compose-serv.yml down
 
 release:
 	rm -rf ${RELEASE_DIR}${APP}*
 	GOOS=windows GOARCH=amd64 go build -ldflags="-H windowsgui" -o ${RELEASE_DIR}/${APP}.exe ${SOURCE}
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o ${RELEASE_DIR}/${APP} ${SOURCE}
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o ${RELEASE_DIR}/${APP} ${SOURCE}
 
 .PHONY: build run release lint test gen mod

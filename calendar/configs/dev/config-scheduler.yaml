@@ -1,0 +1,34 @@
+# Пример файла конфигурации для сервиса Scheduler
+
+# Настройки логирования
+log: 
+    # уровень логирования (error / warn / info / debug)
+    level: debug
+    # путь к файлу логов
+    file: 
+    # формат логирования
+    format_JSON: true
+
+# Настройки СУБД
+db:     
+    # виды storage (MemorySlice / MemoryMap / Postgres)
+    name: "Postgres"
+    host: localhost
+    port: 5432
+    user: postgres
+    password: 12345
+    database: pg_calendar
+    ssl: disable
+
+# Настройка доступа к RabbitMQ  
+queue:
+    user: guest
+    password: guest
+    host: "0.0.0.0"
+    port: 5672    
+    exchange_name: calendar
+    exchange_type: fanout
+    qname: events    
+    binding_key: 
+    consumer_tag: 
+      

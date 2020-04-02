@@ -34,7 +34,7 @@ func grpcServerStart(cmd *cobra.Command, args []string) {
 	}
 	logger := logger.NewLogger(cfg.Log)
 
-	db, err := storage.NewStorageDB(cfg)
+	db, err := storage.NewStorageDB(cfg.DB)
 	if err != nil {
 		log.Fatalf("newStorageDB failed: %s", err)
 	}

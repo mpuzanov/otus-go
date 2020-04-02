@@ -3,7 +3,7 @@
 # Настройки логирования
 log: 
     # уровень логирования (error / warn / info / debug)
-    #level: debug
+    level: debug
     # путь к файлу логов
     file: 
     # формат логирования
@@ -11,7 +11,7 @@ log:
 
 # Настройки веб-сервера
 # ip и port на котором должен слушать web-сервер
-http_listen: "0.0.0.0:8090"
+http_listen: "0.0.0.0:8888"
 
 # Настройки grpc-сервера    
 # ip и port на котором должен слушать gRPC-сервер
@@ -20,19 +20,12 @@ grpc_listen: "0.0.0.0:50051"
 # Настройки СУБД
 db:     
     # виды storage (MemorySlice / MemoryMap / Postgres)
-    db_name: "Postgres"
-    # Строка подключения к БД
-    url: "postgres://postgres:12345@localhost:5432/pg_calendar_test?sslmode=disable"
-   
-queue:
-    user: guest
-    password: guest
-    #host: "0.0.0.0"
-    host: "192.168.56.103"    
-    port: 5672    
-    exchange_name: calendar
-    exchange_type: fanout
-    qname: events    
-    binding_key: 
-    consumer_tag: 
+    name: "Postgres"
+    host: 127.0.0.1
+    port: 5432
+    user: postgres
+    password: 12345
+    database: pg_calendar
+    ssl: disable
+
       

@@ -19,8 +19,13 @@ type Config struct {
 
 // DBConf стуктура для настройки работы с базой данных
 type DBConf struct {
-	DbName      string `yaml:"db_name" mapstructure:"db_name"`
-	DatabaseURL string `yaml:"database_url" mapstructure:"url"`
+	Name     string `yaml:"name" mapstructure:"name"`
+	Host     string `yaml:"host" mapstructure:"host"`
+	Port     string `yaml:"port" mapstructure:"port"`
+	User     string `yaml:"user" mapstructure:"user"`
+	Password string `yaml:"password" mapstructure:"password"`
+	Database string `yaml:"database" mapstructure:"database"`
+	SSL      string `yaml:"ssl" mapstructure:"ssl"`
 }
 
 // QueueConf .
@@ -42,9 +47,11 @@ func LoadConfig(filePath string) (*Config, error) {
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.SetDefault("log.level", "info")
-	viper.SetDefault("http_listen", "0.0.0.0:8090")
+	viper.SetDefault("http_listen", "0.0.0.0:8888")
 	viper.SetDefault("grpc_listen", "0.0.0.0:50051")
-	viper.SetDefault("db.url", "postgres://postgres:12345@localhost:5432/pg_calendar_test?sslmode=disable")
+	viper.SetDefault("db.name", "postgres")
+	viper.SetDefault("db.ssl", "disable")
+	// QUEUE_HOST=192.168.56.103 DB_Database=pg_calendar_test
 
 	if filePath != "" {
 		log.Printf("Parsing config: %s\n", filePath)
@@ -64,6 +71,8 @@ func LoadConfig(filePath string) (*Config, error) {
 	if err := viper.Unmarshal(&config); err != nil {
 		return nil, err
 	}
-	//log.Println(config)
+	if config.Log.Level == "debug" {
+		log.Printf("config: %+v", config)
+	}
 	return &config, nil
 }

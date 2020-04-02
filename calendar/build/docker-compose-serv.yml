@@ -1,0 +1,44 @@
+version: '3.7'
+# Запуск postgres (с тестовыми данными) и rabbitmq для тестирования
+
+services:
+
+  db_test:
+    container_name: db_test
+    image: db_test
+    build:
+      context: ../.
+      dockerfile: ./build/db-test/pgtest.Dockerfile            
+    env_file:
+      - ./db-test/.env      
+    ports:
+      - "5432:5432"
+    restart: on-failure      
+    networks:
+      - net      
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.8-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    expose:
+      - 5672
+      - 15672
+    environment:
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: guest
+    restart: on-failure      
+    networks:
+      - net
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5        
+
+networks:
+  net:
+    driver: bridge  
+

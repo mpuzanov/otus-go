@@ -1,6 +1,6 @@
-BEGIN;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE if not exists events
+CREATE TABLE if not exists public.events
 (
 	"id" uuid NOT NULL DEFAULT uuid_generate_v4(),
 	"header" character varying(100) NOT NULL,
@@ -14,4 +14,3 @@ CREATE TABLE if not exists events
 
 CREATE INDEX user_idx ON public.events USING btree (user_id);
 
-END;

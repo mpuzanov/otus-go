@@ -40,7 +40,7 @@ func schedulerServerStart(cmd *cobra.Command, args []string) {
 
 	logger := logger.NewLogger(cfg.Log)
 
-	db, err := storage.NewStorageRemind(cfg)
+	db, err := storage.NewStorageRemind(cfg.DB)
 	if err != nil {
 		log.Fatalf("NewStorageRemind failed: %s", err)
 	}
@@ -49,6 +49,7 @@ func schedulerServerStart(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer mq.Close()
 
 	stopChan := make(chan os.Signal, 1)
 	signal.Notify(stopChan, os.Interrupt)
@@ -57,7 +58,7 @@ func schedulerServerStart(cmd *cobra.Command, args []string) {
 
 		err := mq.Connect()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Failed connect MQ: %s", err)
 		}
 
 		ticker := time.NewTicker(10 * time.Second)
@@ -65,7 +66,7 @@ func schedulerServerStart(cmd *cobra.Command, args []string) {
 
 		for {
 
-			// выбираем сообытия для отправки
+			// выбираем события для отправки
 			events, err := db.GetUserEvents("User1")
 			if err != nil {
 				logger.Error("Failed get events", zap.Error(err))
@@ -97,5 +98,5 @@ func schedulerServerStart(cmd *cobra.Command, args []string) {
 	}()
 
 	<-stopChan
-	mq.Close()
+
 }

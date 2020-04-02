@@ -1,0 +1,142 @@
+version: '3.7'
+
+services:
+  calendar_db:
+    container_name: calendar_db
+    image: calendar_db
+    build:
+      context: ../.
+      dockerfile: ./build/db/postgres.Dockerfile
+    ports:
+      - "5432:5432"
+    expose: 
+      - 5432
+    env_file:
+      - ./db/.env
+    restart: on-failure      
+    networks:
+      app-net:
+        #ipv4_address: 10.5.0.5
+        aliases:
+          - db.app-net
+
+  calendar_db_test:
+    container_name: calendar_db_test
+    image: calendar_db_test
+    build:
+      context: ../.
+      dockerfile: ./build/db-test/pgtest.Dockerfile            
+    env_file:
+      - ./db-test/.env      
+    ports:
+      - "5433:5432"
+    restart: on-failure      
+    networks:
+      app-net:
+        #ipv4_address: 10.5.0.6  
+        aliases:
+          - db-test.app-net        
+
+  calendar_rabbitmq:
+    container_name: calendar_rabbitmq
+    image: rabbitmq:3.8-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    expose:
+      - 5672
+      - 15672
+    environment:
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: guest
+    restart: on-failure      
+    networks:
+      app-net:
+        #ipv4_address: 10.5.0.7 
+        aliases:
+          - rmq.app-net         
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5        
+
+  sender:
+    image: calendar_sender
+    container_name: calendar_sender
+    build:
+      context: ../.
+      #dockerfile: ./build/sender/sender.Dockerfile
+      dockerfile: ./build/sender/sender_build.Dockerfile
+    env_file:
+      - ./.env      
+    environment:
+      - QUEUE_HOST=calendar_rabbitmq
+    depends_on:
+      - calendar_rabbitmq
+    networks:
+      - app-net      
+    restart: on-failure
+
+  calendar_api:
+    image: calendar_api
+    container_name: calendar_api
+    build:
+      context: ../.
+      #dockerfile: ./build/calendar/api.Dockerfile
+      dockerfile: ./build/calendar/api_build.Dockerfile
+    env_file:
+      - ./.env         
+    environment:
+      - DB_HOST=calendar_db_test
+    depends_on:
+      - calendar_db_test
+    networks:
+      - app-net  
+    restart: on-failure
+
+  calendar_scheduler:
+    image: calendar_scheduler
+    container_name: calendar_scheduler
+    build:
+      context: ../.
+      #dockerfile: ./build/scheduler/scheduler.Dockerfile
+      dockerfile: ./build/scheduler/scheduler_build.Dockerfile
+    env_file:
+      - ./.env           
+    environment:
+      - DB_HOST=calendar_db_test
+      - QUEUE_HOST=calendar_rabbitmq
+    depends_on:
+      - calendar_db
+      - calendar_rabbitmq
+    networks:
+      - app-net 
+    restart: on-failure
+
+  calendar_web:
+    image: calendar_web
+    container_name: calendar_web
+    build:
+      context: ../.
+      #dockerfile: ./build/web/web.Dockerfile
+      dockerfile: ./build/web/web_build.Dockerfile
+    env_file:
+      - ./.env        
+    environment:
+      - DB_HOST=calendar_db_test
+    ports:
+      - "8888:8888"
+    depends_on:
+      - calendar_db_test
+    networks:
+      - app-net    
+    restart: on-failure
+
+networks:
+  app-net:
+    driver: bridge  
+    # ipam:
+    #   config:
+    #     - subnet: 10.5.0.0/16 
+
