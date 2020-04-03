@@ -16,6 +16,7 @@ GO_TEST_DIRS := $(shell \
 	uniq)	
 
 build: 
+	@echo "Компилилируем сервисы"
 	@CGO_ENABLED=0 go build -v -o calendar_api ${SOURCE}
 	@CGO_ENABLED=0 go build -v -o calendar_scheduler ./cmd/scheduler
 	@CGO_ENABLED=0 go build -ldflags="-s -w" -v -o calendar_sender ./cmd/sender
@@ -55,21 +56,21 @@ docker-build:
 	docker build -t puzanovma/calendar -f ./build/calendar/api_build.Dockerfile .
 
 .PHONY: up
-up:
+up: build
 	./build/docker-up.sh
 
 .PHONY: down
 down:
 	./build/docker-down.sh
 
-.PHONY: serv-up
+.PHONY: db-up
 # Запуск postgres (с тестовыми данными) и rabbitmq для тестирования
-serv-up:
-	docker-compose -f build/docker-compose-serv.yml up --build --detach
+db-up:
+	docker-compose -f build/docker-compose-db.yml up --build --detach
 
-.PHONY: serv-up
-serv-down:
-	docker-compose  --file build/docker-compose-serv.yml down
+.PHONY: db-down
+db-down:
+	docker-compose  --file build/docker-compose-db.yml down
 
 release:
 	rm -rf ${RELEASE_DIR}${APP}*

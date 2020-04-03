@@ -1,37 +1,32 @@
-version: "3.7"
+version: "2.1"
 services:
    
     db:
       image: postgres:12.0-alpine
-      container_name: container-db
-      env_file:
-        - ./db/.env        
+      container_name: container-db    
       environment:
-        POSTGRES_USER: ${POSTGRES_USER}
-        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-        POSTGRES_DB: ${POSTGRES_DB}          
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: 12345
+        POSTGRES_DB: pg_calendar_test         
       ports:
         - 5432:5432
       networks:
         - net
       healthcheck:
-        test: ["CMD", "pg_isready -U ${POSTGRES_USER}"]
-        interval: 10s
-        timeout: 5s
+        test: [ "CMD", "nc", "-z", "localhost", "5432" ]
+        interval: 5s
+        timeout: 10s
         retries: 5
-        start_period: 10s
     
     migrate:
       container_name: container-migrate
-      image: migrate/migrate
-      env_file:
-        - ./db/.env          
+      image: migrate/migrate  
       depends_on:
-        - db    
+        db:
+          condition: service_healthy
       volumes:
-         - ./migrations:/migrations
-      command: -path /migrations -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable up
-      restart: on-failure
+         - ../migrations:/migrations
+      command: -path /migrations -database postgres://postgres:12345@db:5432/pg_calendar_test?sslmode=disable up
       networks:
         - net
 
@@ -47,34 +42,33 @@ services:
       environment:
         - RABBITMQ_DEFAULT_USER=guest
         - RABBITMQ_DEFAULT_PASS=guest        
-      restart: on-failure
       networks:
         - net
       healthcheck:
         test: [ "CMD", "nc", "-z", "localhost", "5672" ]
-        interval: 5s
-        timeout: 15s
-        retries: 1
+        interval: 15s
+        timeout: 10s
+        retries: 5
     
     scheduler:
       image: puzanovma/scheduler
       container_name: scheduler
       build:
         context: ../.
-        dockerfile: ./build/scheduler/scheduler.Dockerfile
-      env_file:
-        - ./.env             
+        dockerfile: ./build/scheduler/scheduler.Dockerfile      
       environment:
         - DB_HOST=db
+        - DB_USER=postgres
+        - DB_DATABASE=pg_calendar_test
         - QUEUE_HOST=rabbitmq
       networks:
         - net
       depends_on:
-        - db
-        - migrate        
-        - rabbitmq   
-      restart: on-failure    
-
+        db:
+          condition: service_healthy
+        rabbitmq:
+          condition: service_healthy
+  
 networks:
   net:
     driver: bridge
