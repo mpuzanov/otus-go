@@ -2,6 +2,7 @@ package postgresdb_test
 
 import (
 	"context"
+	"log"
 	"os"
 	"testing"
 	"time"
@@ -16,6 +17,7 @@ var (
 	dbURL     string
 	UserTest  string = "User1"
 	eventTest *model.Event
+	pg        *postgresdb.EventStore
 )
 
 func TestMain(m *testing.M) {
@@ -31,28 +33,24 @@ func TestMain(m *testing.M) {
 	textEvent := "описание события"
 	eventTest = &model.Event{Header: "Событие 1", Text: textEvent, StartTime: startTime, EndTime: endTime, UserName: UserTest, ReminderBefore: reminderBefore}
 
+	ctx := context.Background()
+	var err error
+	pg, err = postgresdb.NewPgEventStore(ctx, dbURL)
+	if err != nil {
+		log.Fatalf("Error connect database: %v", err)
+		return
+	}
+
 	os.Exit(m.Run())
 }
 
 func TestAddEvent(t *testing.T) {
-	ctx := context.Background()
-	pg, err := postgresdb.NewPgEventStore(ctx, dbURL)
-	if err != nil {
-		t.Errorf("Error connect database: %v", err)
-		return
-	}
 	got, err := pg.AddEvent(eventTest)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, got)
 }
 
 func TestGetUserEvents(t *testing.T) {
-	ctx := context.Background()
-	pg, err := postgresdb.NewPgEventStore(ctx, dbURL)
-	if err != nil {
-		t.Errorf("Error connect database: %v", err)
-		return
-	}
 	got, err := pg.GetUserEvents(UserTest)
 	assert.NoError(t, err)
 	assert.NotNil(t, got)
@@ -63,12 +61,6 @@ func TestGetUserEvents(t *testing.T) {
 }
 
 func TestFindEventByID(t *testing.T) {
-	ctx := context.Background()
-	pg, err := postgresdb.NewPgEventStore(ctx, dbURL)
-	if err != nil {
-		t.Errorf("Error connect database: %v", err)
-		return
-	}
 	evList, err := pg.GetUserEvents(UserTest)
 	assert.NoError(t, err)
 	//t.Logf("Кол-во записей: %v", len(evList))
@@ -90,12 +82,6 @@ func TestFindEventByID(t *testing.T) {
 }
 
 func TestUpdateEvent(t *testing.T) {
-	ctx := context.Background()
-	pg, err := postgresdb.NewPgEventStore(ctx, dbURL)
-	if err != nil {
-		t.Errorf("Error connect database: %v", err)
-		return
-	}
 	//добавляем событие
 	id, err := pg.AddEvent(eventTest)
 	assert.NoError(t, err)
@@ -115,12 +101,6 @@ func TestUpdateEvent(t *testing.T) {
 }
 
 func TestDelEvent(t *testing.T) {
-	ctx := context.Background()
-	pg, err := postgresdb.NewPgEventStore(ctx, dbURL)
-	if err != nil {
-		t.Errorf("Error connect database: %v", err)
-		return
-	}
 	//добавляем событие
 	id, err := pg.AddEvent(eventTest)
 	assert.NoError(t, err)
