@@ -36,7 +36,11 @@ func TestMain(m *testing.M) {
 
 func TestAddEvent(t *testing.T) {
 	ctx := context.Background()
-	pg, _ := postgresdb.NewPgEventStore(ctx, dbURL)
+	pg, err := postgresdb.NewPgEventStore(ctx, dbURL)
+	if err != nil {
+		t.Errorf("Error connect database: %v", err)
+		return
+	}
 	got, err := pg.AddEvent(eventTest)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, got)
@@ -44,7 +48,11 @@ func TestAddEvent(t *testing.T) {
 
 func TestGetUserEvents(t *testing.T) {
 	ctx := context.Background()
-	pg, _ := postgresdb.NewPgEventStore(ctx, dbURL)
+	pg, err := postgresdb.NewPgEventStore(ctx, dbURL)
+	if err != nil {
+		t.Errorf("Error connect database: %v", err)
+		return
+	}
 	got, err := pg.GetUserEvents(UserTest)
 	assert.NoError(t, err)
 	assert.NotNil(t, got)
@@ -56,8 +64,11 @@ func TestGetUserEvents(t *testing.T) {
 
 func TestFindEventByID(t *testing.T) {
 	ctx := context.Background()
-	pg, _ := postgresdb.NewPgEventStore(ctx, dbURL)
-
+	pg, err := postgresdb.NewPgEventStore(ctx, dbURL)
+	if err != nil {
+		t.Errorf("Error connect database: %v", err)
+		return
+	}
 	evList, err := pg.GetUserEvents(UserTest)
 	assert.NoError(t, err)
 	//t.Logf("Кол-во записей: %v", len(evList))
@@ -80,8 +91,11 @@ func TestFindEventByID(t *testing.T) {
 
 func TestUpdateEvent(t *testing.T) {
 	ctx := context.Background()
-	pg, _ := postgresdb.NewPgEventStore(ctx, dbURL)
-
+	pg, err := postgresdb.NewPgEventStore(ctx, dbURL)
+	if err != nil {
+		t.Errorf("Error connect database: %v", err)
+		return
+	}
 	//добавляем событие
 	id, err := pg.AddEvent(eventTest)
 	assert.NoError(t, err)
@@ -102,8 +116,11 @@ func TestUpdateEvent(t *testing.T) {
 
 func TestDelEvent(t *testing.T) {
 	ctx := context.Background()
-	pg, _ := postgresdb.NewPgEventStore(ctx, dbURL)
-
+	pg, err := postgresdb.NewPgEventStore(ctx, dbURL)
+	if err != nil {
+		t.Errorf("Error connect database: %v", err)
+		return
+	}
 	//добавляем событие
 	id, err := pg.AddEvent(eventTest)
 	assert.NoError(t, err)
