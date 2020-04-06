@@ -1,0 +1,62 @@
+version: '3.7'
+
+services:
+
+  calendar_db_test:
+    container_name: calendar_db_test
+    image: calendar_db_test
+    build:
+      context: ../.
+      dockerfile: ./build/db-test/pgtest.Dockerfile            
+    env_file:
+      - ./db-test/.env      
+    ports:
+      - "5432:5432"
+    restart: on-failure      
+    networks:
+      - app-net  
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5432" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+  
+  calendar_api:
+    image: calendar_api
+    container_name: calendar_api
+    build:
+      context: ../.
+      dockerfile: ./build/calendar/api.Dockerfile
+      #dockerfile: ./build/calendar/api_build.Dockerfile
+    env_file:
+      - ./.env         
+    environment:
+      - DB_HOST=calendar_db_test
+    ports:
+      - "50051:50051"      
+    depends_on:
+      - calendar_db_test
+    networks:
+      - app-net  
+    restart: on-failure
+
+  integration_tests:
+    build:
+      context: ../.
+      dockerfile: ./build/integration-test/Dockerfile
+    command: "true"
+    env_file:
+      - ./.env
+    environment:
+      #GRPC_LISTEN: "0.0.0.0:50051"
+      GRPC_LISTEN: "calendar_api:50051"
+    depends_on:
+      - calendar_db_test
+      - calendar_api
+    restart: on-failure
+    networks:
+      - app-net
+
+networks:
+  app-net:
+    driver: bridge  

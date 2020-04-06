@@ -42,7 +42,7 @@ services:
       timeout: 10s
       retries: 5        
 
-  sender:
+  calendar_sender:
     image: calendar_sender
     container_name: calendar_sender
     build:

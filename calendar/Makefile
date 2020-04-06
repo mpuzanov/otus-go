@@ -41,9 +41,6 @@ run-mq:
 run-sender:
 	@go run ./cmd/sender --config=configs/prod/config-sender.yaml
 
-test:
-	@go test -v $(GO_TEST_DIRS)
-
 gen:
 	protoc -I api/proto --go_out=plugins=grpc:pkg/calendar/api api/proto/calendar.proto
 
@@ -55,26 +52,41 @@ mod:
 docker-build: 
 	docker build -t puzanovma/calendar -f ./build/calendar/api_build.Dockerfile .
 
-.PHONY: up
 up: build
 	./build/docker-up.sh
 
-.PHONY: down
 down:
 	./build/docker-down.sh
 
 .PHONY: db-up
 # Запуск postgres (с тестовыми данными) и rabbitmq для тестирования
-db-up:
-	docker-compose -f build/docker-compose-db.yml up --build --detach
-
+db-up: 
+	docker-compose -f build/docker-compose-db.yml up --detach
 .PHONY: db-down
 db-down:
 	docker-compose  --file build/docker-compose-db.yml down
+
+.PHONY: cal-test
+calendar-test:
+	@go test -v -count=1 $(GO_TEST_DIRS)
+
+# Поднимаем БД, тестируем, убираем БД
+test-unit: db-up calendar-test db-down
+
+.PHONY: test
+# Запуск Integration tests
+test:
+	set -e ;\
+	docker-compose -f build/docker-compose.test.yml up --build -d ;\
+	test_status_code=0 ;\
+	docker-compose -f build/docker-compose.test.yml run integration_tests go test ./tests/integration || test_status_code=$$? ;\
+	docker-compose -f build/docker-compose.test.yml down --volumes;\
+	printf "Return code is $$test_status_code\n" ;\
+	exit $$test_status_code ;\
 
 release:
 	rm -rf ${RELEASE_DIR}${APP}*
 	GOOS=windows GOARCH=amd64 go build -ldflags="-H windowsgui" -o ${RELEASE_DIR}/${APP}.exe ${SOURCE}
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o ${RELEASE_DIR}/${APP} ${SOURCE}
 
-.PHONY: build run release lint test gen mod
+.PHONY: build run release lint test gen mod up down
