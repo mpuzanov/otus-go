@@ -53,23 +53,6 @@ services:
       timeout: 10s
       retries: 5        
 
-  calendar_sender:
-    image: calendar_sender
-    container_name: calendar_sender
-    build:
-      context: ../..
-      dockerfile: ./build/docker/sender/sender.Dockerfile
-      #dockerfile: ./build/docker/sender/sender_build.Dockerfile
-    env_file:
-      - ./.env      
-    environment:
-      QUEUE_HOST: calendar_rabbitmq
-    depends_on:
-      - calendar_rabbitmq
-    networks:
-      - net      
-    restart: on-failure
-
   calendar_api:
     image: calendar_api
     container_name: calendar_api
@@ -88,6 +71,23 @@ services:
       - calendar_db
     networks:
       - net  
+    restart: on-failure
+
+  calendar_sender:
+    image: calendar_sender
+    container_name: calendar_sender
+    build:
+      context: ../..
+      dockerfile: ./build/docker/sender/sender.Dockerfile
+      #dockerfile: ./build/docker/sender/sender_build.Dockerfile
+    env_file:
+      - ./.env      
+    environment:
+      QUEUE_HOST: calendar_rabbitmq
+    depends_on:
+      - calendar_rabbitmq
+    networks:
+      - net      
     restart: on-failure
 
   calendar_scheduler:

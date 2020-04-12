@@ -48,7 +48,14 @@ API - предоставляет GRPC интерфейс для пользова
 
 ## Компиляция и тестирование
 
+make build  - компиляция
+make test - тестероване
+make integration-tests   - интеграционное тестирование
+
 ## Докеризация
 
-Поднятие контейнеров с Postgres и RabbitMQ: make db-up  (make db-down)
 Поднятие всех сервисов:  make up  (make down)
+
+## Мониторинг
+
+Используется Prometheus

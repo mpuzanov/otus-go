@@ -23,7 +23,7 @@ func NewPgEventStore(ctx context.Context, databaseURL string) (*EventStore, erro
 	if err != nil {
 		return nil, err
 	}
-	err = db.Ping()
+	err = db.PingContext(ctx)
 	if err != nil {
 		return nil, err
 	}

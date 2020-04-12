@@ -15,6 +15,7 @@ type Config struct {
 	HTTPAddr string         `yaml:"http_listen" mapstructure:"http_listen"`
 	GRPCAddr string         `yaml:"grpc_listen" mapstructure:"grpc_listen"`
 	Queue    QueueConf      `yaml:"queue" mapstructure:"queue"`
+	Prom     PromConf       `yaml:"prometheus" mapstructure:"prometheus"`
 }
 
 // DBConf стуктура для настройки работы с базой данных
@@ -41,14 +42,22 @@ type QueueConf struct {
 	ConsumerTag  string `yaml:"consumer_tag" mapstructure:"consumer_tag"`
 }
 
+// PromConf .
+type PromConf struct {
+	GRPCAddr   string `yaml:"grpc_addr" mapstructure:"grpc_addr"`
+	SenderAddr string `yaml:"sender_addr" mapstructure:"sender_addr"`
+}
+
 // LoadConfig Загрузка конфигурации из файла
 func LoadConfig(filePath string) (*Config, error) {
 
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.SetDefault("log.level", "info")
-	viper.SetDefault("http_listen", "0.0.0.0:8888")
-	viper.SetDefault("grpc_listen", "0.0.0.0:50051")
+	viper.SetDefault("http_listen", "localhost:8888")
+	viper.SetDefault("grpc_listen", "localhost:50051")
+	viper.SetDefault("prometheus.grpc_addr", "localhost:9091")
+	viper.SetDefault("prometheus.sender_addr", "localhost:9092")
 	viper.SetDefault("db.name", "postgres")
 	viper.SetDefault("db.ssl", "disable")
 	// QUEUE_HOST=192.168.56.103 DB_Database=pg_calendar_test

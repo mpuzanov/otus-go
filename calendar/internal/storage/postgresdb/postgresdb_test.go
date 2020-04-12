@@ -23,8 +23,7 @@ var (
 func TestMain(m *testing.M) {
 	dbURL = os.Getenv("DB_URL")
 	if dbURL == "" {
-		dbURL = "host=localhost dbname=pg_calendar_test user=postgres password=12345 sslmode=disable"
-		//databaseURL = "postgres://postgres:12345@localhost:5432/pg_calendar?sslmode=disable"
+		dbURL = "postgres://postgres:12345@localhost:5432/pg_calendar?sslmode=disable"
 	}
 
 	startTime := time.Date(2020, time.April, 1, 9, 0, 0, 0, time.UTC)
@@ -33,11 +32,12 @@ func TestMain(m *testing.M) {
 	textEvent := "описание события"
 	eventTest = &model.Event{Header: "Событие 1", Text: textEvent, StartTime: startTime, EndTime: endTime, UserName: UserTest, ReminderBefore: reminderBefore}
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
 	var err error
 	pg, err = postgresdb.NewPgEventStore(ctx, dbURL)
 	if err != nil {
-		log.Fatalf("Error connect database: %v", err)
+		log.Fatalf("Error connect database: %v (%v)", err, dbURL)
 		return
 	}
 
