@@ -58,24 +58,16 @@ up:
 down:
 	./build/docker-down.sh
 
-.PHONY: db-up
-# Запуск postgres (с тестовыми данными) и rabbitmq для тестирования
-db-up: 
-	docker-compose -f build/deploy/docker-compose-db.yml up --build --detach
-.PHONY: db-down
-db-down:
-	docker-compose  --file build/deploy/docker-compose-db.yml down
-
-.PHONY: cal-test
-calendar-test:
-	@go test -v -count=1 $(GO_TEST_DIRS)
-
-# Поднимаем БД, тестируем, убираем БД
-test-unit: db-up calendar-test db-down
-
 .PHONY: test
-# Запуск Integration tests
+# Поднимаем postgres, rabbitmq, тестируем, убираем postgres
 test:
+	docker-compose -f build/deploy/docker-compose-db.yml up --build --detach ;\
+	go test -v -count=1 ./internal/... ;\
+	docker-compose  --file build/deploy/docker-compose-db.yml down ;\
+
+.PHONY: integration-tests
+# Запуск Integration tests
+integration-tests:
 	set -e ;\
 	docker-compose -f build/deploy/docker-compose.test.yml up --build -d ;\
 	test_status_code=0 ;\

@@ -36,7 +36,7 @@ func NewStorageDB(cfg config.DBConf) (interfaces.EventStorage, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("Connecting to the database successfully")
+		fmt.Printf("Connecting to %s:%s/%s the database successfully", cfg.Host, cfg.Port, cfg.Database)
 	}
 	return db, err
 }
@@ -64,7 +64,7 @@ func NewStorageRemind(cfg config.DBConf) (interfaces.UseCaseReminder, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("Connecting to the database successfully")
+		fmt.Printf("Connecting to %s:%s/%s the database successfully", cfg.Host, cfg.Port, cfg.Database)
 	}
 	return db, err
 }

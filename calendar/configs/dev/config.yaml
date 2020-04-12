@@ -28,4 +28,6 @@ db:
     database: pg_calendar
     ssl: disable
 
-      
+prometheus:
+    grpc_addr: "0.0.0.0:9091"
+    sender_addr: "0.0.0.0:9092"

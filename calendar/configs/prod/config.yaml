@@ -27,7 +27,7 @@ db:
     password: 12345
     database: pg_calendar
     ssl: disable
-    # Строка подключения к БД
-    #url: "postgres://postgres:12345@192.168.56.1:5432/pg_calendar?sslmode=disable"
    
-      
+prometheus:
+    grpc_addr: "0.0.0.0:9091"
+    sender_addr: "0.0.0.0:9092"  

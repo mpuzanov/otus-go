@@ -21,3 +21,7 @@ queue:
     qname: events    
     binding_key: 
     consumer_tag:
+
+prometheus:
+    grpc_addr: "0.0.0.0:9091"
+    sender_addr: "0.0.0.0:9092"         

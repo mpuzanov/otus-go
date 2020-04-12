@@ -29,9 +29,8 @@ type testCalendar struct {
 
 func init() {
 	if grpcListen == "" {
-		grpcListen = "0.0.0.0:50051"
+		grpcListen = "localhost:50051"
 	}
-	//log.Println("grpcListen", grpcListen)
 }
 
 func (t *testCalendar) startSuite() {
@@ -75,7 +74,7 @@ func (t *testCalendar) stopSuite() {
 
 func (t *testCalendar) iCallGrpcCalendarMethodAddEvent() error {
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	t.addResponse, t.responseErr = t.client.AddEvent(ctx, t.eventProto)
 	if t.responseErr != nil {
@@ -109,12 +108,6 @@ func (t *testCalendar) iHaveTheAddEvent() error {
 
 func (t *testCalendar) iCallGrpcCalendarMethodUpdateEvent() error {
 
-	// conn, err := grpc.Dial(grpcListen, grpc.WithInsecure())
-	// if err != nil {
-	// 	return fmt.Errorf("fail to dial : %s, %v", grpcListen, err)
-	// }
-	// defer conn.Close()
-	// client := api.NewCalendarClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
@@ -144,13 +137,6 @@ func (t *testCalendar) iHaveTheEventID() error {
 }
 
 func (t *testCalendar) iCallGrpcCalendarMethodDeleteEvent() error {
-
-	// conn, err := grpc.Dial(grpcListen, grpc.WithInsecure())
-	// if err != nil {
-	// 	return fmt.Errorf("fail to dial : %s, %v", grpcListen, err)
-	// }
-	// defer conn.Close()
-	// client := api.NewCalendarClient(conn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()

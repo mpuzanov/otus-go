@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/mpuzanov/otus-go/calendar/internal/config"
 	"github.com/mpuzanov/otus-go/calendar/internal/mq"
 	"github.com/mpuzanov/otus-go/calendar/pkg/logger"
@@ -8,6 +10,8 @@ import (
 
 	"log"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 )
 
@@ -23,6 +27,12 @@ var (
 		Short: "Run sender",
 		Run:   senderServerStart,
 	}
+
+	// metric for prometheus
+	msgCounter = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "rmq_sent_messages",
+		Help: "Count of messages sent in seconds",
+	})
 )
 
 func senderServerStart(cmd *cobra.Command, args []string) {
@@ -33,6 +43,13 @@ func senderServerStart(cmd *cobra.Command, args []string) {
 	}
 
 	logger := logger.NewLogger(cfg.Log)
+
+	prometheus.MustRegister(msgCounter)
+	http.Handle("/metrics", promhttp.Handler())
+	go func() {
+		log.Printf("mq metrics initialisation...")
+		log.Fatal(http.ListenAndServe(cfg.Prom.SenderAddr, nil))
+	}()
 
 	mq := mq.NewMQ(cfg, logger)
 	if err != nil {
@@ -62,6 +79,7 @@ func senderServerStart(cmd *cobra.Command, args []string) {
 					//logger.Debug("Send Event", zap.ByteString("Body", d.Body), zap.Int("countMsg", countMsg))
 					log.Printf("Send Event: %s, CountMsg: %d", d.Body, countMsg)
 					countMsg++
+					msgCounter.Inc()
 				}
 			}()
 

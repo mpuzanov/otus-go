@@ -31,4 +31,3 @@ queue:
     qname: events    
     binding_key: 
     consumer_tag: 
-      

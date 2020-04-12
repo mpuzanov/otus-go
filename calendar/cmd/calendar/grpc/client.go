@@ -33,7 +33,9 @@ func grpcClientStart(cmd *cobra.Command, args []string) {
 		log.Fatalf("fail to dial : %s, %v\n", server, err)
 	}
 	client := api.NewCalendarClient(conn)
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	log.Printf("Connect to %s successfully", server)
 
 	//Проверяем методы календаря
 	//============= создаём событие для проверки ====================
@@ -63,7 +65,7 @@ func grpcClientStart(cmd *cobra.Command, args []string) {
 	// rpc AddEvent(Event) returns (ResponseResult) {}  AddEvent(event *model.Event) (string, error)
 	resp, err := client.AddEvent(ctx, eventProto)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error AddEvent. %v", err)
 	}
 	if resp.GetError() != "" {
 		log.Fatal(resp.GetError())
@@ -73,7 +75,10 @@ func grpcClientStart(cmd *cobra.Command, args []string) {
 	eventProto.Id = resp.GetId()
 
 	// rpc UpdateEvent(Event) returns (ResponseResult) {} UpdateEvent(event *model.Event) (bool, error)
-	respUpd, _ := client.UpdateEvent(ctx, eventProto)
+	respUpd, err := client.UpdateEvent(ctx, eventProto)
+	if err != nil {
+		log.Fatalf("Error UpdateEvent. %v", err)
+	}
 	if respUpd.GetError() != "" {
 		log.Fatal(respUpd.GetError())
 	} else {
@@ -82,7 +87,10 @@ func grpcClientStart(cmd *cobra.Command, args []string) {
 
 	// rpc FindEventByID(EventID) returns (EventResponse) {} FindEventByID(id string) (*model.Event, error)
 	IDFind := eventProto.Id
-	eventFind, _ := client.FindEventByID(ctx, &api.EventID{Id: IDFind})
+	eventFind, err := client.FindEventByID(ctx, &api.EventID{Id: IDFind})
+	if err != nil {
+		log.Fatalf("Error FindEventByID. %v", err)
+	}
 	if eventFind.GetError() != "" {
 		log.Fatal(eventFind.GetError())
 	} else {
@@ -90,7 +98,10 @@ func grpcClientStart(cmd *cobra.Command, args []string) {
 	}
 
 	// rpc GetUserEvents(RequestUser) returns (EventsResponse) {} GetUserEvents(user string) ([]model.Event, error)
-	events, _ := client.GetUserEvents(ctx, &api.RequestUser{User: UserName})
+	events, err := client.GetUserEvents(ctx, &api.RequestUser{User: UserName})
+	if err != nil {
+		log.Fatalf("Error GetUserEvents. %v", err)
+	}
 	if events.GetError() != "" {
 		log.Fatal(events.GetError())
 	} else {
@@ -99,7 +110,10 @@ func grpcClientStart(cmd *cobra.Command, args []string) {
 
 	// rpc DelEvent(EventID) returns (ResponseResult) {} DelEvent(id string) (bool, error)
 	IDDel := eventProto.Id
-	respDel, _ := client.DelEvent(ctx, &api.EventID{Id: IDDel})
+	respDel, err := client.DelEvent(ctx, &api.EventID{Id: IDDel})
+	if err != nil {
+		log.Fatalf("Error DelEvent. %v", err)
+	}
 	if resp.GetError() != "" {
 		log.Fatal(respDel.GetError())
 	} else {
