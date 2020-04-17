@@ -11,7 +11,7 @@ GO_SRC_DIRS := $(shell \
 	xargs -I {} dirname {}  | \
 	uniq)
 GO_TEST_DIRS := $(shell \
-	find . -name "*_test.go" -not -path "./vendor/*" | \
+	find . -name "*_test.go" -not -path "./vendor/*" -not -path "./tests/*" | \
 	xargs -I {} dirname {}  | \
 	uniq)	
 
@@ -21,7 +21,7 @@ build:
 	@CGO_ENABLED=0 go build -v -o calendar_scheduler ./cmd/scheduler
 	@CGO_ENABLED=0 go build -ldflags="-s -w" -v -o calendar_sender ./cmd/sender
 
-lint:
+lint: 
 	@goimports -w ${GO_SRC_DIRS}	
 	@gofmt -s -w ${GO_SRC_DIRS}
 	@golangci-lint run
