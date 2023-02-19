@@ -1,6 +1,6 @@
 module github.com/mpuzanov/otus-go/calendar
 
-go 1.13
+go 1.15
 
 require (
 	github.com/cenk/backoff v2.2.1+incompatible
